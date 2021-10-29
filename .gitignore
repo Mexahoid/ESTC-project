@@ -50,3 +50,9 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# SDK
+ESTC-NSDK/
+
+# Build files
+**/_build
