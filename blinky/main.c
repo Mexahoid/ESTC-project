@@ -60,6 +60,28 @@
 #define LED_DELAY 200
 #define BLINK_DELAY 500
 
+typedef enum
+{
+    Yellow = 6,
+    Red = 8,
+    Green = 5,
+    Blue = 1,
+} led;
+
+
+void changeLedState(int led, int state)
+{
+    switch (led)
+    {
+    case 1:
+        break;
+
+    default:
+        break;
+    }
+}
+
+
 void blink(int led, int count)
 {
     for (size_t i = 0; i < count * 2; i++)
@@ -72,17 +94,29 @@ void blink(int led, int count)
 
 int main(void)
 {
-    bsp_board_init(BSP_INIT_LEDS);
+    nrf_gpio_cfg_output(6);
+    nrf_gpio_cfg_output(8);
+    nrf_gpio_cfg_output(41);
+    nrf_gpio_cfg_output(12);
+
+
     while (true)
     {
-        // 6613
-        blink(0, 6);
-        blink(1, 6);
-        blink(2, 1);
-        blink(3, 3);
+        nrf_gpio_pin_write(6, 0);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(6, 1);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(8, 0);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(8, 1);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(41, 0);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(41, 1);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(12, 0);
+        nrf_delay_ms(1000);
+        nrf_gpio_pin_write(12, 1);
+        nrf_delay_ms(1000);
     }
 }
-
-/**
- *@}
- **/
