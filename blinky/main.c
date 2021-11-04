@@ -81,14 +81,13 @@ void changeLedState(LED led)
 }
 
 
-void blink(LED led, int count)
+void blink(LED led)
 {
-    for (size_t i = 0; i < count * 2; i++)
+    for (char i = 0; i < 2; i++)
     {
         changeLedState(led);
-        nrf_delay_ms(LED_DELAY);
+        nrf_delay_ms(BLINK_DELAY);
     }
-    nrf_delay_ms(BLINK_DELAY);
 }
 
 int main(void)
@@ -104,7 +103,11 @@ int main(void)
     int pos = 0;
     while (true)
     {
-        blink(leds[pos], counts[pos]);
+        for (size_t i = 0; i < counts[pos]; i++)
+        {
+            blink(leds[pos]);
+        }
+
         pos++;
         pos %= sizeof(counts)/sizeof(int);
     }
