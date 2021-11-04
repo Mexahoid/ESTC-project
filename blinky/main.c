@@ -101,14 +101,17 @@ int main(void)
     }
 
     int pos = 0;
+    int counter = 1;
     while (true)
     {
-        for (size_t i = 0; i < counts[pos]; i++)
+        if (counter > counts[pos])
         {
-            blink(leds[pos]);
+            counter = 1;
+            pos++;
+            pos %= sizeof(counts)/sizeof(int);
         }
 
-        pos++;
-        pos %= sizeof(counts)/sizeof(int);
+        blink(leds[pos]);
+        counter++;
     }
 }
