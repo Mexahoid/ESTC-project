@@ -117,19 +117,29 @@ int main(void)
 
     int pos = 0;
     int counter = 1;
+    int delcounter = 0;
+    char stage = 0;
     while (true)
     {
         if(!readButtonState(Button1))
             continue;
 
-        if (counter > counts[pos])
+        if(delcounter > BLINK_DELAY)
         {
-            counter = 1;
-            pos++;
-            pos %= sizeof(counts)/sizeof(int);
+            changeLedState(leds[pos]);
+            stage = !stage;
+            if(!stage)
+                counter++;
+            delcounter = 0;
+            if (counter > counts[pos])
+            {
+                counter = 1;
+                pos++;
+                pos %= sizeof(counts)/sizeof(int);
+            }
         }
 
-        blink(leds[pos]);
-        counter++;
+        delcounter++;
+        nrf_delay_ms(1);
     }
 }
