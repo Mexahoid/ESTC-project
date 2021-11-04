@@ -60,33 +60,32 @@
 #define LED_DELAY 200
 #define BLINK_DELAY 500
 
-typedef enum
+typedef enum LED
 {
     Yellow = 6,
     Red = 8,
-    Green = 5,
-    Blue = 1,
-} led;
+    Green = 41,
+    Blue = 12,
+} LED;
 
 
-void changeLedState(int led, int state)
+void initLed(LED led)
 {
-    switch (led)
-    {
-    case 1:
-        break;
+    nrf_gpio_cfg_output(led);
+    nrf_gpio_pin_write(led, 1);
+}
 
-    default:
-        break;
-    }
+void changeLedState(LED led)
+{
+    nrf_gpio_pin_toggle(led);
 }
 
 
-void blink(int led, int count)
+void blink(LED led, int count)
 {
     for (size_t i = 0; i < count * 2; i++)
     {
-        bsp_board_led_invert(led);
+        changeLedState(led);
         nrf_delay_ms(LED_DELAY);
     }
     nrf_delay_ms(BLINK_DELAY);
@@ -94,29 +93,19 @@ void blink(int led, int count)
 
 int main(void)
 {
-    nrf_gpio_cfg_output(6);
-    nrf_gpio_cfg_output(8);
-    nrf_gpio_cfg_output(41);
-    nrf_gpio_cfg_output(12);
+    LED leds[] = {Yellow, Red, Green, Blue};
+    int counts[] = {6, 6, 1, 3};
 
+    for (size_t i = 0; i < sizeof(leds)/sizeof(LED); i++)
+    {
+        initLed(leds[i]);
+    }
 
+    int pos = 0;
     while (true)
     {
-        nrf_gpio_pin_write(6, 0);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(6, 1);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(8, 0);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(8, 1);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(41, 0);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(41, 1);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(12, 0);
-        nrf_delay_ms(1000);
-        nrf_gpio_pin_write(12, 1);
-        nrf_delay_ms(1000);
+        blink(leds[pos], counts[pos]);
+        pos++;
+        pos %= sizeof(counts)/sizeof(int);
     }
 }
