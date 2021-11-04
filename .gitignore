@@ -55,4 +55,4 @@ dkms.conf
 ESTC-NSDK/
 
 # Build files
-**/_build
+builds
