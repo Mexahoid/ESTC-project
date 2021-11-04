@@ -1,7 +1,8 @@
 PROJECT_NAME     := blinky_pca10059_mbr
 TARGETS          := nrf52840_xxaa
 BUILD_NAME ?= _build
-OUTPUT_DIRECTORY := builds/$(BUILD_NAME)
+BUILDS_FOLDER ?= builds
+OUTPUT_DIRECTORY := $(BUILDS_FOLDER)/$(BUILD_NAME)
 
 SDK_ROOT ?= ../ESTC-NSDK
 PROJ_DIR := ./
@@ -117,8 +118,11 @@ LIB_FILES += -lc -lnosys -lm
 
 .PHONY: default help
 
+makedir:
+	mkdir -p $(BUILDS_FOLDER)
+
 # Default target - first one defined
-default: nrf52840_xxaa
+default: makedir nrf52840_xxaa
 
 # Print all targets that can be built
 help:
@@ -129,8 +133,8 @@ help:
 TEMPLATE_PATH := $(SDK_ROOT)/components/toolchain/gcc
 
 
-include $(TEMPLATE_PATH)/Makefile.common
 
+include $(TEMPLATE_PATH)/Makefile.common
 $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 .PHONY: flash
