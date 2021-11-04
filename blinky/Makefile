@@ -1,8 +1,9 @@
 PROJECT_NAME     := blinky_pca10059_mbr
 TARGETS          := nrf52840_xxaa
-OUTPUT_DIRECTORY := _build
+BUILD_NAME ?= _build
+OUTPUT_DIRECTORY := builds/$(BUILD_NAME)
 
-SDK_ROOT := ../ESTC-NSDK
+SDK_ROOT ?= ../ESTC-NSDK
 PROJ_DIR := ./
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
