@@ -47,7 +47,6 @@
  * This file contains the source code for a sample application to blink LEDs.
  *
  */
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "nrf_delay.h"
@@ -57,63 +56,61 @@
  * @brief Function for application main entry.
  */
 
-#define BLINK_DELAY 500
+#define BLINK_DELAY_MS 500
 
-typedef enum LED
+typedef enum
 {
-    Yellow = 6,
-    Red = 8,
-    Green = 41,
-    Blue = 12,
-} LED;
+    BUTTON1 = NRF_GPIO_PIN_MAP(1, 6),
+} button_t;
 
-typedef enum BUTTON
+typedef enum
 {
-    Button1 = 38,
-} BUTTON;
+    YELLOW = NRF_GPIO_PIN_MAP(0, 6),
+    RED = NRF_GPIO_PIN_MAP(0, 8),
+    GREEN = NRF_GPIO_PIN_MAP(1, 9),
+    BLUE = NRF_GPIO_PIN_MAP(0, 12),
+} led_t;
 
-void initButton(BUTTON btn)
+
+
+void init_button(button_t btn)
 {
     nrf_gpio_cfg_input(btn, GPIO_PIN_CNF_PULL_Pullup);
 }
 
-int readButtonState(BUTTON btn)
+bool is_button_pressed(button_t btn)
 {
-    return !nrf_gpio_pin_read(btn);
+    return nrf_gpio_pin_read(btn) != 1;
 }
 
-void initLed(LED led)
+void init_led(led_t led)
 {
     nrf_gpio_cfg_output(led);
     nrf_gpio_pin_write(led, 1);
 }
 
-void changeLedState(LED led)
+void change_led_state(led_t led)
 {
     nrf_gpio_pin_toggle(led);
 }
 
-
-void blink(LED led)
+void delay_ms(int amount)
 {
-    for (char i = 0; i < 2; i++)
-    {
-        changeLedState(led);
-        nrf_delay_ms(BLINK_DELAY);
-    }
+    nrf_delay_ms(amount);
 }
+
 
 int main(void)
 {
-    LED leds[] = {Yellow, Red, Green, Blue};
+    led_t leds[] = {YELLOW, RED, GREEN, BLUE};
     int counts[] = {6, 6, 1, 3};
 
-    for (size_t i = 0; i < sizeof(leds)/sizeof(LED); i++)
+    for (size_t i = 0; i < ARRAY_SIZE(leds); i++)
     {
-        initLed(leds[i]);
+        init_led(leds[i]);
     }
 
-    initButton(Button1);
+    init_button(BUTTON1);
 
     int pos = 0;
     int counter = 1;
@@ -121,12 +118,12 @@ int main(void)
     char stage = 0;
     while (true)
     {
-        if(!readButtonState(Button1))
+        if(!is_button_pressed(BUTTON1))
             continue;
 
-        if(delcounter > BLINK_DELAY)
+        if(delcounter > BLINK_DELAY_MS)
         {
-            changeLedState(leds[pos]);
+            change_led_state(leds[pos]);
             stage = !stage;
             if(!stage)
                 counter++;
@@ -135,11 +132,11 @@ int main(void)
             {
                 counter = 1;
                 pos++;
-                pos %= sizeof(counts)/sizeof(int);
+                pos %= ARRAY_SIZE(counts);
             }
         }
 
         delcounter++;
-        nrf_delay_ms(1);
+        delay_ms(1);
     }
 }
