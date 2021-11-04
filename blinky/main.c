@@ -57,7 +57,6 @@
  * @brief Function for application main entry.
  */
 
-#define LED_DELAY 200
 #define BLINK_DELAY 500
 
 typedef enum LED
@@ -68,6 +67,20 @@ typedef enum LED
     Blue = 12,
 } LED;
 
+typedef enum BUTTON
+{
+    Button1 = 38,
+} BUTTON;
+
+void initButton(BUTTON btn)
+{
+    nrf_gpio_cfg_input(btn, GPIO_PIN_CNF_PULL_Pullup);
+}
+
+int readButtonState(BUTTON btn)
+{
+    return !nrf_gpio_pin_read(btn);
+}
 
 void initLed(LED led)
 {
@@ -100,10 +113,15 @@ int main(void)
         initLed(leds[i]);
     }
 
+    initButton(Button1);
+
     int pos = 0;
     int counter = 1;
     while (true)
     {
+        if(!readButtonState(Button1))
+            continue;
+
         if (counter > counts[pos])
         {
             counter = 1;
