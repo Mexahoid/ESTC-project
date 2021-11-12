@@ -60,7 +60,9 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
-#define BLINK_DELAY_MS 500
+#include "nrfx_systick.h"
+
+#define BLINK_DELAY_MS 1000
 
 typedef enum
 {
@@ -103,6 +105,33 @@ void delay_ms(int amount)
 }
 
 
+
+void modulate(int pwm_percentage, led_t led, nrfx_systick_state_t * timestamp)
+{
+    bool is_on = false;
+    int ms_percent = 0;
+    while (ms_percent < 100)
+    {
+        nrfx_systick_get(timestamp);
+        while (!nrfx_systick_test(timestamp, 10))
+            continue;
+
+        if (ms_percent < pwm_percentage && !is_on)
+        {
+            is_on = true;
+            nrf_gpio_pin_write(led, 0);
+        }
+
+        if (ms_percent >= pwm_percentage && is_on)
+        {
+            is_on = false;
+            nrf_gpio_pin_write(led, 1);
+        }
+        ms_percent++;
+    }
+}
+
+
 /**
  * @brief Function for application main entry.
  */
@@ -121,12 +150,48 @@ int main(void)
         init_led(leds[i]);
     }
     init_button(BUTTON1);
+    nrfx_systick_init();
+
+
+    nrfx_systick_state_t timestamp;
+
+    nrfx_systick_get(&timestamp);
+    nrfx_systick_test(&timestamp, 10);
 
     int pos = 0;
     int counter = 1;
     int delay_counter = 0;
     bool flag = false;
     bool button_is_pressed = false;
+
+
+    int pwm_percentage = 0;
+    int tries = 10;
+    while (tries > 0)
+    {
+        int current_ms = 0;
+        int delay_ms_2 = BLINK_DELAY_MS / 2 / 100;
+        int curr_delay = 0;
+
+        while (current_ms < BLINK_DELAY_MS)
+        {
+            if (curr_delay >= delay_ms_2)
+            {
+                if (current_ms < BLINK_DELAY_MS / 2)
+                    pwm_percentage++;
+                else
+                    pwm_percentage--;
+                curr_delay = 0;
+            }
+
+            modulate(pwm_percentage, leds[2], &timestamp);
+            curr_delay++;
+            current_ms++;
+        }
+        tries--;
+    }
+
+
 
     while (true)
     {
