@@ -106,14 +106,15 @@ void delay_ms(int amount)
 
 
 
-void modulate(int pwm_percentage, led_t led, nrfx_systick_state_t * timestamp)
+void modulate_for_ms(int pwm_percentage, led_t led)
 {
     bool is_on = false;
     int ms_percent = 0;
+    nrfx_systick_state_t timestamp;
     while (ms_percent < 100)
     {
-        nrfx_systick_get(timestamp);
-        while (!nrfx_systick_test(timestamp, 10))
+        nrfx_systick_get(&timestamp);
+        while (!nrfx_systick_test(&timestamp, 10))
             continue;
 
         if (ms_percent < pwm_percentage && !is_on)
@@ -153,45 +154,20 @@ int main(void)
     nrfx_systick_init();
 
 
-    nrfx_systick_state_t timestamp;
-
-    nrfx_systick_get(&timestamp);
-    nrfx_systick_test(&timestamp, 10);
 
     int pos = 0;
     int counter = 1;
-    int delay_counter = 0;
-    bool flag = false;
     bool button_is_pressed = false;
 
 
-    int pwm_percentage = 0;
-    int tries = 10;
-    while (tries > 0)
-    {
-        int current_ms = 0;
-        int delay_ms_2 = BLINK_DELAY_MS / 2 / 100;
-        int curr_delay = 0;
+    int pwm_percentage = 1;
+    int delay_ms_2 = BLINK_DELAY_MS / 100 / 2;
+    int curr_delay = 0;
 
-        while (current_ms < BLINK_DELAY_MS)
-        {
-            if (curr_delay >= delay_ms_2)
-            {
-                if (current_ms < BLINK_DELAY_MS / 2)
-                    pwm_percentage++;
-                else
-                    pwm_percentage--;
-                curr_delay = 0;
-            }
+    int delay_counter = 0;
 
-            modulate(pwm_percentage, leds[2], &timestamp);
-            curr_delay++;
-            current_ms++;
-        }
-        tries--;
-    }
-
-
+    nrfx_systick_state_t timestamp;
+    nrfx_systick_get(&timestamp);
 
     while (true)
     {
@@ -199,13 +175,13 @@ int main(void)
         NRF_LOG_PROCESS();
 
 
+        modulate_for_ms(pwm_percentage, leds[pos]);
+
         if(!is_button_pressed(BUTTON1))
         {
             if (button_is_pressed)
             {
                 NRF_LOG_INFO("Button released");
-                LOG_BACKEND_USB_PROCESS();
-                NRF_LOG_INFO("Current delay: %d out of %d", delay_counter, BLINK_DELAY_MS);
                 LOG_BACKEND_USB_PROCESS();
                 button_is_pressed = false;
             }
@@ -217,26 +193,35 @@ int main(void)
             LOG_BACKEND_USB_PROCESS();
             button_is_pressed = true;
         }
-        if(delay_counter > BLINK_DELAY_MS)
+
+        if(delay_counter >= BLINK_DELAY_MS)
         {
-            change_led_state(leds[pos]);
-            flag = !flag;
-            if(!flag)
-            {
-                NRF_LOG_INFO("%d led blink: %d of %d", pos + 1, counter, counts[pos]);
-                LOG_BACKEND_USB_PROCESS();
-                counter++;
-            }
-            delay_counter = 0;
+            NRF_LOG_INFO("%d led blink: %d of %d", pos + 1, counter, counts[pos]);
+            LOG_BACKEND_USB_PROCESS();
+            counter++;
             if (counter > counts[pos])
             {
                 counter = 1;
+                pwm_percentage = 1;
                 pos++;
                 pos %= ARRAY_SIZE(counts);
             }
+            delay_counter = 0;
         }
 
+        if (curr_delay >= delay_ms_2)
+        {
+            NRF_LOG_INFO("if (%d), %d", delay_counter, pwm_percentage);
+            LOG_BACKEND_USB_PROCESS();
+            // for first 500 ms pwm increases, for second one - decreases
+            if (delay_counter < BLINK_DELAY_MS / 2)
+                pwm_percentage++;
+            else
+                pwm_percentage--;
+            curr_delay = 0;
+        }
+
+        curr_delay++;
         delay_counter++;
-        delay_ms(1);
     }
 }
