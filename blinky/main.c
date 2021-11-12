@@ -61,10 +61,13 @@
 #include "app_usbd_serial_num.h"
 
 #include "nrfx_systick.h"
+#include "nrfx_gpiote.h"
 
 #define BLINK_DELAY_MS 1000
 
 #define PWM_FREQUENCY 1000
+
+#define BUTTON_DOUBLECLICK_DELAY_MS 250
 
 typedef enum
 {
@@ -78,17 +81,6 @@ typedef enum
     GREEN = NRF_GPIO_PIN_MAP(1, 9),
     BLUE = NRF_GPIO_PIN_MAP(0, 12),
 } led_t;
-
-
-void init_button(button_t btn)
-{
-    nrf_gpio_cfg_input(btn, GPIO_PIN_CNF_PULL_Pullup);
-}
-
-bool is_button_pressed(button_t btn)
-{
-    return nrf_gpio_pin_read(btn) != 1;
-}
 
 void init_led(led_t led)
 {
@@ -105,8 +97,6 @@ void delay_ms(int amount)
 {
     nrf_delay_ms(amount);
 }
-
-
 
 void pwm_modulate(int pwm_percentage, int delay, led_t led)
 {
@@ -135,10 +125,16 @@ void pwm_modulate(int pwm_percentage, int delay, led_t led)
     }
 }
 
+static bool st_button_pressed_flag = false;
 
-/**
- * @brief Function for application main entry.
- */
+void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    UNUSED_VARIABLE(pin);
+    UNUSED_VARIABLE(action);
+
+    st_button_pressed_flag = !st_button_pressed_flag;
+}
+
 int main(void)
 {
     ret_code_t ret = NRF_LOG_INIT(NULL);
@@ -150,18 +146,20 @@ int main(void)
     int leds_blink_counts[] = {6, 6, 1, 3};
 
     for (int i = 0; i < ARRAY_SIZE(leds); i++)
-    {
         init_led(leds[i]);
-    }
-    init_button(BUTTON1);
+
     nrfx_systick_init();
+    nrfx_systick_state_t timestamp_button;
 
-
+    nrfx_err_t err_code = nrfx_gpiote_init();
+    APP_ERROR_CHECK(err_code);
+    nrfx_gpiote_in_config_t in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_LOTOHI(false);
+    in_config.pull = NRF_GPIO_PIN_PULLUP;
+    nrfx_gpiote_in_init(BUTTON1, &in_config, in_pin_handler);
+    nrfx_gpiote_in_event_enable(BUTTON1, true);
 
     int led_index = 0;
     int led_blink_counter = 1;
-    bool button_is_pressed = false;
-
 
     int pwm_percentage = 0;
     // X ms for 1%, 1000 ms -> 500 ms for 0-100% -> 5ms for 1% pwm duty
@@ -173,32 +171,49 @@ int main(void)
     // duty percent delay (in us) for pwm function, needs refactoring
     int pwm_duty_delay_us = 1000000 / 100 / PWM_FREQUENCY;
 
+    bool is_automatic = false;
+    bool prev_button_state = st_button_pressed_flag;
+
+    int button_press_counter = -1;
+    int button_delay = BUTTON_DOUBLECLICK_DELAY_MS * 1000;
     while (true)
     {
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
 
-
         pwm_modulate(pwm_percentage, pwm_duty_delay_us, leds[led_index]);
 
-        if(!is_button_pressed(BUTTON1))
+        if (prev_button_state != st_button_pressed_flag)
         {
-            if (button_is_pressed)
-            {
-                NRF_LOG_INFO("Button released");
-                LOG_BACKEND_USB_PROCESS();
-                button_is_pressed = false;
-            }
-            continue;
-        }
-        if (!button_is_pressed)
-        {
-            NRF_LOG_INFO("Button pressed");
+            button_press_counter++;
+            nrfx_systick_get(&timestamp_button);
+            NRF_LOG_INFO("Click found, presses: %d, time: %d", button_press_counter, timestamp_button.time);
             LOG_BACKEND_USB_PROCESS();
-            button_is_pressed = true;
         }
 
-        if(counter_ms >= BLINK_DELAY_MS)
+        if (button_press_counter > 0)
+        {
+            if (nrfx_systick_test(&timestamp_button, button_delay))
+            {
+                button_press_counter = 0;
+                nrfx_systick_get(&timestamp_button);
+                NRF_LOG_INFO("There were no second clicks, time: %d", timestamp_button.time);
+                LOG_BACKEND_USB_PROCESS();
+            }
+            if (button_press_counter > 1)
+            {
+                NRF_LOG_INFO("Changing mode");
+                LOG_BACKEND_USB_PROCESS();
+                is_automatic = !is_automatic;
+                button_press_counter = 0;
+            }
+        }
+
+        prev_button_state = st_button_pressed_flag;
+        if (!is_automatic)
+            continue;
+
+        if (counter_ms >= BLINK_DELAY_MS)
         {
             NRF_LOG_INFO("%d led blink: %d of %d", led_index + 1, led_blink_counter, leds_blink_counts[led_index]);
             LOG_BACKEND_USB_PROCESS();
