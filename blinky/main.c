@@ -64,6 +64,8 @@
 
 #define BLINK_DELAY_MS 1000
 
+#define PWM_FREQUENCY 1000
+
 typedef enum
 {
     BUTTON1 = NRF_GPIO_PIN_MAP(1, 6),
@@ -106,29 +108,30 @@ void delay_ms(int amount)
 
 
 
-void modulate_for_ms(int pwm_percentage, led_t led)
+void pwm_modulate(int pwm_percentage, int delay, led_t led)
 {
     bool is_on = false;
-    int ms_percent = 0;
+    // Percent of duty delay
+    int time_percent = 0;
     nrfx_systick_state_t timestamp;
-    while (ms_percent < 100)
+    while (time_percent < 100)
     {
         nrfx_systick_get(&timestamp);
-        while (!nrfx_systick_test(&timestamp, 10))
+        while (!nrfx_systick_test(&timestamp, delay))
             continue;
 
-        if (ms_percent < pwm_percentage && !is_on)
+        if (time_percent < pwm_percentage && !is_on)
         {
             is_on = true;
             nrf_gpio_pin_write(led, 0);
         }
 
-        if (ms_percent >= pwm_percentage && is_on)
+        if (time_percent >= pwm_percentage && is_on)
         {
             is_on = false;
             nrf_gpio_pin_write(led, 1);
         }
-        ms_percent++;
+        time_percent++;
     }
 }
 
@@ -144,7 +147,7 @@ int main(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
     led_t leds[] = {YELLOW, RED, GREEN, BLUE};
-    int counts[] = {6, 6, 1, 3};
+    int leds_blink_counts[] = {6, 6, 1, 3};
 
     for (int i = 0; i < ARRAY_SIZE(leds); i++)
     {
@@ -155,19 +158,20 @@ int main(void)
 
 
 
-    int pos = 0;
-    int counter = 1;
+    int led_index = 0;
+    int led_blink_counter = 1;
     bool button_is_pressed = false;
 
 
-    int pwm_percentage = 1;
-    int delay_ms_2 = BLINK_DELAY_MS / 100 / 2;
-    int curr_delay = 0;
+    int pwm_percentage = 0;
+    // X ms for 1%, 1000 ms -> 500 ms for 0-100% -> 5ms for 1% pwm duty
+    int pwm_percent_delay_ms = BLINK_DELAY_MS / 100 / 2;
+    int pwm_delay_ms = 0;
 
-    int delay_counter = 0;
+    int counter_ms = 0;
 
-    nrfx_systick_state_t timestamp;
-    nrfx_systick_get(&timestamp);
+    // duty percent delay (in us) for pwm function, needs refactoring
+    int pwm_duty_delay_us = 1000000 / 100 / PWM_FREQUENCY;
 
     while (true)
     {
@@ -175,7 +179,7 @@ int main(void)
         NRF_LOG_PROCESS();
 
 
-        modulate_for_ms(pwm_percentage, leds[pos]);
+        pwm_modulate(pwm_percentage, pwm_duty_delay_us, leds[led_index]);
 
         if(!is_button_pressed(BUTTON1))
         {
@@ -194,34 +198,31 @@ int main(void)
             button_is_pressed = true;
         }
 
-        if(delay_counter >= BLINK_DELAY_MS)
+        if(counter_ms >= BLINK_DELAY_MS)
         {
-            NRF_LOG_INFO("%d led blink: %d of %d", pos + 1, counter, counts[pos]);
+            NRF_LOG_INFO("%d led blink: %d of %d", led_index + 1, led_blink_counter, leds_blink_counts[led_index]);
             LOG_BACKEND_USB_PROCESS();
-            counter++;
-            if (counter > counts[pos])
+            led_blink_counter++;
+            if (led_blink_counter > leds_blink_counts[led_index])
             {
-                counter = 1;
-                pwm_percentage = 1;
-                pos++;
-                pos %= ARRAY_SIZE(counts);
+                led_blink_counter = 1;
+                led_index++;
+                led_index %= ARRAY_SIZE(leds_blink_counts);
             }
-            delay_counter = 0;
+            counter_ms = 0;
         }
 
-        if (curr_delay >= delay_ms_2)
+        if (pwm_delay_ms >= pwm_percent_delay_ms)
         {
-            NRF_LOG_INFO("if (%d), %d", delay_counter, pwm_percentage);
-            LOG_BACKEND_USB_PROCESS();
             // for first 500 ms pwm increases, for second one - decreases
-            if (delay_counter < BLINK_DELAY_MS / 2)
+            if (counter_ms < BLINK_DELAY_MS / 2)
                 pwm_percentage++;
             else
                 pwm_percentage--;
-            curr_delay = 0;
+            pwm_delay_ms = 0;
         }
 
-        curr_delay++;
-        delay_counter++;
+        pwm_delay_ms++;
+        counter_ms++;
     }
 }
