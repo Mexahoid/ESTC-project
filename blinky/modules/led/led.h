@@ -7,6 +7,7 @@
 
 #define BLINK_DELAY_MS 1000
 
+// Struct that holds LED pin codes.
 typedef enum
 {
     LED_YELLOW = NRF_GPIO_PIN_MAP(0, 6),
@@ -15,6 +16,7 @@ typedef enum
     LED_BLUE = NRF_GPIO_PIN_MAP(0, 12),
 } led_t;
 
+// Struct that holds LED states.
 typedef enum
 {
     LED_ON = 0,

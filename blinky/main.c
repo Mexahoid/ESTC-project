@@ -31,8 +31,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "boards.h"
-#include "nrf_delay.h"
-#include "nrfx_systick.h"
 
 #include "nordic_common.h"
 
@@ -44,14 +42,10 @@
 #include "button.h"
 #include "pwm.h"
 
+// Delegate for PWM methods.
 void gpio_action(int gpio, int state_on)
 {
     led_change_state_to(gpio, state_on);
-}
-
-void delay_us(int amount)
-{
-    nrf_delay_us(amount);
 }
 
 int main(void)
@@ -70,9 +64,6 @@ int main(void)
         logs_empty_action();
 
         pwm_tick_update();
-        /*if (p == 1000)
-        NRF_LOG_INFO("Counter: %d", p);
-        LOG_BACKEND_USB_PROCESS();*/
 
         pwm_modulate(led_get_current());
 

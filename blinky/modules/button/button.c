@@ -1,11 +1,14 @@
 #include "button.h"
 
-bool button_pressed_flag = false;
-bool button_prev_state = false;
+// Current button press flag
+volatile bool button_pressed_flag = false;
+// Previous button state for comparing
+volatile bool button_prev_state = false;
+// Timestamp of first button click
 nrfx_systick_state_t button_timestamp;
-int button_press_counter = 0;
+// Counter of button clicks
+volatile int button_press_counter = 0;
 
-// Adds interrupt on button lotohi click.
 void button_interrupt_init()
 {
     nrfx_err_t err_code = nrfx_gpiote_init();
@@ -18,7 +21,6 @@ void button_interrupt_init()
     NRF_LOG_INFO("Button interrupt initialized");
     LOG_BACKEND_USB_PROCESS();
 }
-
 
 void button_in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {

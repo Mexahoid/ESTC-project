@@ -1,9 +1,13 @@
 #include "led.h"
 
+// Array with LED themselves
 led_t leds[] = {LED_YELLOW, LED_RED, LED_GREEN, LED_BLUE};
+// Array with LED blink counts
 int leds_blink_counts[] = {6, 6, 1, 3};
 
+// Current LED index
 volatile int led_index = 0;
+// Current LED blink counter
 volatile int led_blink_counter = 1;
 
 bool led_check_for_change(int counter_ms)
