@@ -31,42 +31,48 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "boards.h"
+#include "nrf_delay.h"
+#include "nrfx_systick.h"
 
 #include "nordic_common.h"
 
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
-
 #include "log.h"
 #include "led.h"
 #include "button.h"
 #include "pwm.h"
-
-
 
 void gpio_action(int gpio, int state_on)
 {
     led_change_state_to(gpio, state_on);
 }
 
+void delay_us(int amount)
+{
+    nrf_delay_us(amount);
+}
 
 int main(void)
 {
     logs_init();
     leds_init();
-    pwm_init(gpio_action, LED_ON);
+    pwm_init(gpio_action, LED_ON, BLINK_DELAY_MS);
     button_interrupt_init();
 
-    // X ms for 1%, 1000 ms -> 500 ms for 0-100% -> 5ms for 1% pwm duty
-    int pwm_percent_delay_ms = BLINK_DELAY_MS / 100 / 2;
     int counter_ms = 0;
 
-
     bool is_automatic = false;
+
     while (true)
     {
         logs_empty_action();
+
+        pwm_tick_update();
+        /*if (p == 1000)
+        NRF_LOG_INFO("Counter: %d", p);
+        LOG_BACKEND_USB_PROCESS();*/
 
         pwm_modulate(led_get_current());
 
@@ -78,8 +84,11 @@ int main(void)
         if (led_check_for_change(counter_ms))
             counter_ms = 0;
 
-        pwm_percentage_recalc(counter_ms, BLINK_DELAY_MS / 2, pwm_percent_delay_ms);
+        pwm_percentage_recalc();
 
-        counter_ms++;
+        if (pwm_is_ms_passed())
+        {
+            counter_ms++;
+        }
     }
 }
