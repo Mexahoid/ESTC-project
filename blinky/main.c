@@ -110,7 +110,7 @@ int main(void)
     nrfx_systick_init();
     nrfx_systick_state_t timestamp_button;
 
-    button_interrupt_init();
+    button_interrupt_init(in_pin_handler);
 
     int led_index = 0;
     int led_blink_counter = 1;
@@ -127,7 +127,7 @@ int main(void)
     bool is_automatic = false;
     bool prev_button_state = st_button_pressed_flag;
 
-    int button_press_counter = -1;
+    int button_press_counter = 0;
     int button_delay = BUTTON_DOUBLECLICK_DELAY_MS * 1000;
 
     while (true)
