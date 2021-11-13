@@ -66,6 +66,8 @@ SRC_FILES += \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/modules/led/led.c \
   $(PROJ_DIR)/modules/button/button.c \
+  $(PROJ_DIR)/modules/pwm/pwm.c \
+  $(PROJ_DIR)/modules/log/log.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -73,6 +75,8 @@ INC_FOLDERS += \
   ./config \
   $(PROJ_DIR)/modules/led \
   $(PROJ_DIR)/modules/button \
+  $(PROJ_DIR)/modules/pwm \
+  $(PROJ_DIR)/modules/log \
   $(SDK_ROOT)/components/libraries/fifo \
   $(SDK_ROOT)/components/libraries/pwm \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \

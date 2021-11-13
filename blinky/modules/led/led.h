@@ -2,6 +2,8 @@
 #define MY_MODULE_LED
 
 #include "nrf_gpio.h"
+#include "nrf_log.h"
+#include "nrf_log_backend_usb.h"
 
 #define BLINK_DELAY_MS 1000
 
@@ -23,8 +25,15 @@ typedef enum
 void led_init(led_t led);
 
 // Changes LED state to ON or OFF.
-void change_led_state_to(led_t led, led_state_t state);
+void led_change_state_to(led_t led, led_state_t state);
 
+// Inits LED as a GPIO.
+bool led_check_for_change(int counter_ms);
 
+// Inits all LEDs.
+void leds_init();
+
+// Returns current working LED.
+led_t led_get_current();
 
 #endif

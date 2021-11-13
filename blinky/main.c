@@ -30,127 +30,56 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "nrf_delay.h"
 #include "boards.h"
 
 #include "nordic_common.h"
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
-
-#include "nrf_log_backend_usb.h"
 
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
-#include "nrfx_systick.h"
-#include "nrfx_gpiote.h"
 
+#include "log.h"
 #include "led.h"
 #include "button.h"
+#include "pwm.h"
 
-#define PWM_FREQUENCY 1000
 
 
-void delay_us(int amount)
+void gpio_action(int gpio, int state_on)
 {
-    nrf_delay_us(amount);
+    led_change_state_to(gpio, state_on);
 }
 
-// Modulates PWM in relation to timestamp. Checks whether the difference between timestamp and present tick is more than pwm_delay_passed_us and ONs or OFFs LED.
-void pwm_modulate_related(int pwm_delay_passed_us, led_t led, nrfx_systick_state_t *timestamp)
-{
-    if (!nrfx_systick_test(timestamp, pwm_delay_passed_us))
-        change_led_state_to(led, LED_ON);
-    else
-        change_led_state_to(led, LED_OFF);
-}
-
-// Modulates LED as PWM on pwm_duty_delay_us for a certain pwm_percentage.
-void pwm_modulate(int pwm_percentage, int pwm_duty_delay_us, led_t led)
-{
-    nrfx_systick_state_t timestamp_pwm;
-    nrfx_systick_get(&timestamp_pwm);
-    if (pwm_percentage <= 100 && pwm_percentage >= 0)
-    {
-        int frac = pwm_duty_delay_us / 100;
-        nrfx_systick_get(&timestamp_pwm);
-        for (int i = 0; i < pwm_duty_delay_us; i += frac)
-        {
-            pwm_modulate_related(pwm_percentage * frac, led, &timestamp_pwm);
-            delay_us(frac);
-        }
-    }
-}
 
 int main(void)
 {
-    ret_code_t ret = NRF_LOG_INIT(NULL);
-    APP_ERROR_CHECK(ret);
-    NRF_LOG_INFO("Starting up the test project with USB logging");
-    NRF_LOG_DEFAULT_BACKENDS_INIT();
-
-
-    led_t leds[] = {LED_YELLOW, LED_RED, LED_GREEN, LED_BLUE};
-    int leds_blink_counts[] = {6, 6, 1, 3};
-
-    for (int i = 0; i < ARRAY_SIZE(leds); i++)
-        led_init(leds[i]);
-
-    nrfx_systick_init();
-
+    logs_init();
+    leds_init();
+    pwm_init(gpio_action, LED_ON);
     button_interrupt_init();
 
-    int led_index = 0;
-    int led_blink_counter = 1;
-
-    int pwm_percentage = 0;
     // X ms for 1%, 1000 ms -> 500 ms for 0-100% -> 5ms for 1% pwm duty
     int pwm_percent_delay_ms = BLINK_DELAY_MS / 100 / 2;
-    int pwm_delay_ms = 0;
-
     int counter_ms = 0;
 
-    int pwm_duty_delay_us2 = 1000000 / PWM_FREQUENCY;
 
     bool is_automatic = false;
     while (true)
     {
-        LOG_BACKEND_USB_PROCESS();
-        NRF_LOG_PROCESS();
+        logs_empty_action();
 
-        pwm_modulate(pwm_percentage, pwm_duty_delay_us2, leds[led_index]);
+        pwm_modulate(led_get_current());
 
         button_check_for_doubleclick(&is_automatic);
 
         if (!is_automatic)
             continue;
 
-        if (counter_ms >= BLINK_DELAY_MS)
-        {
-            NRF_LOG_INFO("%d led blinked: %d of %d", led_index + 1, led_blink_counter, leds_blink_counts[led_index]);
-            LOG_BACKEND_USB_PROCESS();
-            led_blink_counter++;
-            if (led_blink_counter > leds_blink_counts[led_index])
-            {
-                led_blink_counter = 1;
-                led_index++;
-                led_index %= ARRAY_SIZE(leds_blink_counts);
-            }
+        if (led_check_for_change(counter_ms))
             counter_ms = 0;
-        }
 
-        if (pwm_delay_ms >= pwm_percent_delay_ms)
-        {
-            // for first 500 ms pwm increases, for second one - decreases
-            if (counter_ms <= BLINK_DELAY_MS / 2 && pwm_percentage < 100)
-                pwm_percentage++;
-            else
-                pwm_percentage--;
-            pwm_delay_ms = 0;
-        }
+        pwm_percentage_recalc(counter_ms, BLINK_DELAY_MS / 2, pwm_percent_delay_ms);
 
-        pwm_delay_ms++;
         counter_ms++;
     }
 }

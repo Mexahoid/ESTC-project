@@ -1,8 +1,8 @@
 #include "button.h"
 
-bool st_button_pressed_flag = false;
-bool s_prev_button_state = false;
-nrfx_systick_state_t timestamp_button;
+bool button_pressed_flag = false;
+bool button_prev_state = false;
+nrfx_systick_state_t button_timestamp;
 int button_press_counter = 0;
 
 // Adds interrupt on button lotohi click.
@@ -25,27 +25,27 @@ void button_in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
     UNUSED_VARIABLE(pin);
     UNUSED_VARIABLE(action);
 
-    st_button_pressed_flag = !st_button_pressed_flag;
+    button_pressed_flag = !button_pressed_flag;
 }
 
 void button_check_for_doubleclick(bool *is_automatic)
 {
-    if (s_prev_button_state != st_button_pressed_flag)
+    if (button_prev_state != button_pressed_flag)
     {
         button_press_counter++;
-        nrfx_systick_get(&timestamp_button);
+        nrfx_systick_get(&button_timestamp);
 
-        NRF_LOG_INFO("Click found, presses: %d, time: %d", button_press_counter, timestamp_button.time);
+        NRF_LOG_INFO("Click found, presses: %d, time: %d", button_press_counter, button_timestamp.time);
         LOG_BACKEND_USB_PROCESS();
     }
 
     if (button_press_counter > 0)
     {
-        if (nrfx_systick_test(&timestamp_button, BUTTON_DOUBLECLICK_DELAY_MS * 1000))
+        if (nrfx_systick_test(&button_timestamp, BUTTON_DOUBLECLICK_DELAY_MS * 1000))
         {
             button_press_counter = 0;
-            nrfx_systick_get(&timestamp_button);
-            NRF_LOG_INFO("There were no second clicks, time: %d", timestamp_button.time);
+            nrfx_systick_get(&button_timestamp);
+            NRF_LOG_INFO("There were no second clicks, time: %d", button_timestamp.time);
             LOG_BACKEND_USB_PROCESS();
         }
         if (button_press_counter > 1)
@@ -57,5 +57,5 @@ void button_check_for_doubleclick(bool *is_automatic)
         }
     }
 
-    s_prev_button_state = st_button_pressed_flag;
+    button_prev_state = button_pressed_flag;
 }
