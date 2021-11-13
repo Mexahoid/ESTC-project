@@ -63,7 +63,7 @@
 #include "nrfx_systick.h"
 #include "nrfx_gpiote.h"
 
-#define BLINK_DELAY_MS 1000
+#include "led.h"
 
 #define PWM_FREQUENCY 1000
 
@@ -73,31 +73,6 @@ typedef enum
 {
     BUTTON1 = NRF_GPIO_PIN_MAP(1, 6),
 } button_t;
-
-typedef enum
-{
-    LED_YELLOW = NRF_GPIO_PIN_MAP(0, 6),
-    LED_RED = NRF_GPIO_PIN_MAP(0, 8),
-    LED_GREEN = NRF_GPIO_PIN_MAP(1, 9),
-    LED_BLUE = NRF_GPIO_PIN_MAP(0, 12),
-} led_t;
-
-typedef enum
-{
-    LED_ON = 0,
-    LED_OFF = 1
-} led_state_t;
-
-void init_led(led_t led)
-{
-    nrf_gpio_cfg_output(led);
-    nrf_gpio_pin_write(led, 1);
-}
-
-void change_led_state_to(led_t led, led_state_t state)
-{
-    nrf_gpio_pin_write(led, state);
-}
 
 void delay_us(int amount)
 {
