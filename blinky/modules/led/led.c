@@ -1,6 +1,6 @@
 #include "led.h"
 
-void init_led(led_t led)
+void led_init(led_t led)
 {
     nrf_gpio_cfg_output(led);
     nrf_gpio_pin_write(led, 1);

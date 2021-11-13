@@ -28,7 +28,6 @@
  * SUCH DAMAGE
 */
 
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "nrf_delay.h"
@@ -52,7 +51,6 @@
 
 #define PWM_FREQUENCY 1000
 
-#define BUTTON_DOUBLECLICK_DELAY_MS 250
 
 void delay_us(int amount)
 {
@@ -85,15 +83,6 @@ void pwm_modulate(int pwm_percentage, int pwm_duty_delay_us, led_t led)
     }
 }
 
-static bool st_button_pressed_flag = false;
-void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
-{
-    UNUSED_VARIABLE(pin);
-    UNUSED_VARIABLE(action);
-
-    st_button_pressed_flag = !st_button_pressed_flag;
-}
-
 int main(void)
 {
     ret_code_t ret = NRF_LOG_INIT(NULL);
@@ -101,16 +90,16 @@ int main(void)
     NRF_LOG_INFO("Starting up the test project with USB logging");
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
+
     led_t leds[] = {LED_YELLOW, LED_RED, LED_GREEN, LED_BLUE};
     int leds_blink_counts[] = {6, 6, 1, 3};
 
     for (int i = 0; i < ARRAY_SIZE(leds); i++)
-        init_led(leds[i]);
+        led_init(leds[i]);
 
     nrfx_systick_init();
-    nrfx_systick_state_t timestamp_button;
 
-    button_interrupt_init(in_pin_handler);
+    button_interrupt_init();
 
     int led_index = 0;
     int led_blink_counter = 1;
@@ -125,11 +114,6 @@ int main(void)
     int pwm_duty_delay_us2 = 1000000 / PWM_FREQUENCY;
 
     bool is_automatic = false;
-    bool prev_button_state = st_button_pressed_flag;
-
-    int button_press_counter = 0;
-    int button_delay = BUTTON_DOUBLECLICK_DELAY_MS * 1000;
-
     while (true)
     {
         LOG_BACKEND_USB_PROCESS();
@@ -137,33 +121,7 @@ int main(void)
 
         pwm_modulate(pwm_percentage, pwm_duty_delay_us2, leds[led_index]);
 
-        if (prev_button_state != st_button_pressed_flag)
-        {
-            button_press_counter++;
-            nrfx_systick_get(&timestamp_button);
-            NRF_LOG_INFO("Click found, presses: %d, time: %d", button_press_counter, timestamp_button.time);
-            LOG_BACKEND_USB_PROCESS();
-        }
-
-        if (button_press_counter > 0)
-        {
-            if (nrfx_systick_test(&timestamp_button, button_delay))
-            {
-                button_press_counter = 0;
-                nrfx_systick_get(&timestamp_button);
-                NRF_LOG_INFO("There were no second clicks, time: %d", timestamp_button.time);
-                LOG_BACKEND_USB_PROCESS();
-            }
-            if (button_press_counter > 1)
-            {
-                NRF_LOG_INFO("Changing mode");
-                LOG_BACKEND_USB_PROCESS();
-                is_automatic = !is_automatic;
-                button_press_counter = 0;
-            }
-        }
-
-        prev_button_state = st_button_pressed_flag;
+        button_check_for_doubleclick(&is_automatic);
 
         if (!is_automatic)
             continue;

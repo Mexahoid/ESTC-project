@@ -20,7 +20,7 @@ typedef enum
 } led_state_t;
 
 // Inits LED as a GPIO.
-void init_led(led_t led);
+void led_init(led_t led);
 
 // Changes LED state to ON or OFF.
 void change_led_state_to(led_t led, led_state_t state);
