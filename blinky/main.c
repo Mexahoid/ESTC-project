@@ -28,22 +28,6 @@
  * SUCH DAMAGE
 */
 
-/** @file
- *
- * @defgroup usb_logging_example_main main.c
- * @{
- * @ingroup usb_logging_example
- * @brief Example logging over USB (for nrf52840 dongle or DK).
- *
- * This example contains all the necessary code to build logging over the USB.
- *
- * Example inverts LED colours every second and prints a message to the USB log.
- *
- * It is possible to configure USB stack manually by setting
- * LOG_BACKEND_USB_INIT_STACK to 0 or leave USB init to the stack by setting
- * LOG_BACKEND_USB_INIT_STACK to 1.
- *
- */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -64,15 +48,11 @@
 #include "nrfx_gpiote.h"
 
 #include "led.h"
+#include "button.h"
 
 #define PWM_FREQUENCY 1000
 
 #define BUTTON_DOUBLECLICK_DELAY_MS 250
-
-typedef enum
-{
-    BUTTON1 = NRF_GPIO_PIN_MAP(1, 6),
-} button_t;
 
 void delay_us(int amount)
 {
@@ -106,7 +86,6 @@ void pwm_modulate(int pwm_percentage, int pwm_duty_delay_us, led_t led)
 }
 
 static bool st_button_pressed_flag = false;
-
 void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     UNUSED_VARIABLE(pin);
@@ -131,12 +110,7 @@ int main(void)
     nrfx_systick_init();
     nrfx_systick_state_t timestamp_button;
 
-    nrfx_err_t err_code = nrfx_gpiote_init();
-    APP_ERROR_CHECK(err_code);
-    nrfx_gpiote_in_config_t in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_LOTOHI(false);
-    in_config.pull = NRF_GPIO_PIN_PULLUP;
-    nrfx_gpiote_in_init(BUTTON1, &in_config, in_pin_handler);
-    nrfx_gpiote_in_event_enable(BUTTON1, true);
+    button_interrupt_init();
 
     int led_index = 0;
     int led_blink_counter = 1;

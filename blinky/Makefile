@@ -65,12 +65,14 @@ SRC_FILES += \
   $(SDK_ROOT)/external/utf_converter/utf.c \
   $(PROJ_DIR)/main.c \
   $(PROJ_DIR)/modules/led/led.c \
+  $(PROJ_DIR)/modules/button/button.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
   $(PROJ_DIR) \
   ./config \
   $(PROJ_DIR)/modules/led \
+  $(PROJ_DIR)/modules/button \
   $(SDK_ROOT)/components/libraries/fifo \
   $(SDK_ROOT)/components/libraries/pwm \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
