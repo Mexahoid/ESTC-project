@@ -76,11 +76,17 @@ typedef enum
 
 typedef enum
 {
-    YELLOW = NRF_GPIO_PIN_MAP(0, 6),
-    RED = NRF_GPIO_PIN_MAP(0, 8),
-    GREEN = NRF_GPIO_PIN_MAP(1, 9),
-    BLUE = NRF_GPIO_PIN_MAP(0, 12),
+    LED_YELLOW = NRF_GPIO_PIN_MAP(0, 6),
+    LED_RED = NRF_GPIO_PIN_MAP(0, 8),
+    LED_GREEN = NRF_GPIO_PIN_MAP(1, 9),
+    LED_BLUE = NRF_GPIO_PIN_MAP(0, 12),
 } led_t;
+
+typedef enum
+{
+    LED_ON = 0,
+    LED_OFF = 1
+} led_state_t;
 
 void init_led(led_t led)
 {
@@ -88,40 +94,39 @@ void init_led(led_t led)
     nrf_gpio_pin_write(led, 1);
 }
 
-void change_led_state(led_t led)
+void change_led_state_to(led_t led, led_state_t state)
 {
-    nrf_gpio_pin_toggle(led);
+    nrf_gpio_pin_write(led, state);
 }
 
-void delay_ms(int amount)
+void delay_us(int amount)
 {
-    nrf_delay_ms(amount);
+    nrf_delay_us(amount);
 }
 
-void pwm_modulate(int pwm_percentage, int delay, led_t led)
+// Modulates PWM in relation to timestamp. Checks whether the difference between timestamp and present tick is more than pwm_delay_passed_us and ONs or OFFs LED.
+void pwm_modulate_related(int pwm_delay_passed_us, led_t led, nrfx_systick_state_t *timestamp)
 {
-    bool is_on = false;
-    // Percent of duty delay
-    int time_percent = 0;
-    nrfx_systick_state_t timestamp;
-    while (time_percent < 100)
+    if (!nrfx_systick_test(timestamp, pwm_delay_passed_us))
+        change_led_state_to(led, LED_ON);
+    else
+        change_led_state_to(led, LED_OFF);
+}
+
+// Modulates LED as PWM on pwm_duty_delay_us for a certain pwm_percentage.
+void pwm_modulate(int pwm_percentage, int pwm_duty_delay_us, led_t led)
+{
+    nrfx_systick_state_t timestamp_pwm;
+    nrfx_systick_get(&timestamp_pwm);
+    if (pwm_percentage <= 100 && pwm_percentage >= 0)
     {
-        nrfx_systick_get(&timestamp);
-        while (!nrfx_systick_test(&timestamp, delay))
-            continue;
-
-        if (time_percent < pwm_percentage && !is_on)
+        int frac = pwm_duty_delay_us / 100;
+        nrfx_systick_get(&timestamp_pwm);
+        for (int i = 0; i < pwm_duty_delay_us; i += frac)
         {
-            is_on = true;
-            nrf_gpio_pin_write(led, 0);
+            pwm_modulate_related(pwm_percentage * frac, led, &timestamp_pwm);
+            delay_us(frac);
         }
-
-        if (time_percent >= pwm_percentage && is_on)
-        {
-            is_on = false;
-            nrf_gpio_pin_write(led, 1);
-        }
-        time_percent++;
     }
 }
 
@@ -142,7 +147,7 @@ int main(void)
     NRF_LOG_INFO("Starting up the test project with USB logging");
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 
-    led_t leds[] = {YELLOW, RED, GREEN, BLUE};
+    led_t leds[] = {LED_YELLOW, LED_RED, LED_GREEN, LED_BLUE};
     int leds_blink_counts[] = {6, 6, 1, 3};
 
     for (int i = 0; i < ARRAY_SIZE(leds); i++)
@@ -168,20 +173,20 @@ int main(void)
 
     int counter_ms = 0;
 
-    // duty percent delay (in us) for pwm function, needs refactoring
-    int pwm_duty_delay_us = 1000000 / 100 / PWM_FREQUENCY;
+    int pwm_duty_delay_us2 = 1000000 / PWM_FREQUENCY;
 
     bool is_automatic = false;
     bool prev_button_state = st_button_pressed_flag;
 
     int button_press_counter = -1;
     int button_delay = BUTTON_DOUBLECLICK_DELAY_MS * 1000;
+
     while (true)
     {
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
 
-        pwm_modulate(pwm_percentage, pwm_duty_delay_us, leds[led_index]);
+        pwm_modulate(pwm_percentage, pwm_duty_delay_us2, leds[led_index]);
 
         if (prev_button_state != st_button_pressed_flag)
         {
@@ -210,12 +215,13 @@ int main(void)
         }
 
         prev_button_state = st_button_pressed_flag;
+
         if (!is_automatic)
             continue;
 
         if (counter_ms >= BLINK_DELAY_MS)
         {
-            NRF_LOG_INFO("%d led blink: %d of %d", led_index + 1, led_blink_counter, leds_blink_counts[led_index]);
+            NRF_LOG_INFO("%d led blinked: %d of %d", led_index + 1, led_blink_counter, leds_blink_counts[led_index]);
             LOG_BACKEND_USB_PROCESS();
             led_blink_counter++;
             if (led_blink_counter > leds_blink_counts[led_index])
@@ -230,7 +236,7 @@ int main(void)
         if (pwm_delay_ms >= pwm_percent_delay_ms)
         {
             // for first 500 ms pwm increases, for second one - decreases
-            if (counter_ms < BLINK_DELAY_MS / 2)
+            if (counter_ms <= BLINK_DELAY_MS / 2 && pwm_percentage < 100)
                 pwm_percentage++;
             else
                 pwm_percentage--;
