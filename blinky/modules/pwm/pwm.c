@@ -63,7 +63,7 @@ void pwm_init(void (*action)(int, int), int state_on, int on_time)
     nrfx_systick_get(&timestamp_pwm_us);
     pwm_state_on = state_on;
     pwm_action = action;
-    pwm_gpio_percent_ms = pwm_duty_delay_us / 100 / 2;
+    pwm_gpio_percent_ms = on_time / 100 / 2;
 }
 
 void pwm_tick_update()
