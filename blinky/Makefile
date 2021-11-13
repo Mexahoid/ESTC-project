@@ -9,7 +9,6 @@ SDK_ROOT ?= ../ESTC-NSDK
 PROJ_DIR := ./
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
-  # LINKER_SCRIPT  := blinky_gcc_nrf52.ld
   LINKER_SCRIPT  := usb_logs_gcc_nrf52.ld
 
 # Source files common to all targets
