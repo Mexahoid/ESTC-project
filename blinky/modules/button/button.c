@@ -30,8 +30,9 @@ void button_in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
     button_pressed_flag = !button_pressed_flag;
 }
 
-void button_check_for_doubleclick(bool *is_automatic)
+bool button_check_for_doubleclick()
 {
+    bool flag = false;
     if (button_prev_state != button_pressed_flag)
     {
         button_press_counter++;
@@ -54,10 +55,11 @@ void button_check_for_doubleclick(bool *is_automatic)
         {
             NRF_LOG_INFO("Changing mode");
             LOG_BACKEND_USB_PROCESS();
-            *is_automatic = !*is_automatic;
+            flag = true;
             button_press_counter = 0;
         }
     }
 
     button_prev_state = button_pressed_flag;
+    return flag;
 }

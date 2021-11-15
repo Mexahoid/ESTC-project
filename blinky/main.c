@@ -67,7 +67,10 @@ int main(void)
 
         pwm_modulate(led_get_current());
 
-        button_check_for_doubleclick(&is_automatic);
+        bool dc_present = button_check_for_doubleclick();
+
+        if (dc_present)
+            is_automatic = !is_automatic;
 
         if (!is_automatic)
             continue;
