@@ -55,8 +55,6 @@ int main(void)
     pwm_init(gpio_action, LED_ON, BLINK_DELAY_MS);
     button_interrupt_init();
 
-    int counter_ms = 0;
-
     bool is_automatic = false;
 
     while (true)
@@ -75,14 +73,11 @@ int main(void)
         if (!is_automatic)
             continue;
 
-        if (led_check_for_change(counter_ms))
-            counter_ms = 0;
+        if (pwm_is_delay_passed())
+        {
+            led_change_for_next();
+        }
 
         pwm_percentage_recalc();
-
-        if (pwm_is_ms_passed())
-        {
-            counter_ms++;
-        }
     }
 }

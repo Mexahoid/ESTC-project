@@ -1,12 +1,12 @@
 #include "button.h"
 
-// Current button press flag
+// Current button press flag.
 volatile bool button_pressed_flag = false;
-// Previous button state for comparing
+// Previous button state for comparing.
 volatile bool button_prev_state = false;
-// Timestamp of first button click
+// Timestamp of first button click.
 nrfx_systick_state_t button_timestamp;
-// Counter of button clicks
+// Counter of button clicks.
 volatile int button_press_counter = 0;
 
 void button_interrupt_init()

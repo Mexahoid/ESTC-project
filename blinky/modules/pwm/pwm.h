@@ -3,7 +3,7 @@
 
 #include "nrfx_systick.h"
 
-// Frequency of PWM in kHz
+// Frequency of PWM in kHz.
 #define PWM_FREQUENCY 1000
 // Delay for the inner counter.
 #define PWM_US_DELAY 1
@@ -24,7 +24,7 @@ void pwm_init(void (*action)(int, int), int state_on, int on_time);
 // Updates inner counter every us.
 void pwm_tick_update();
 
-// Returns true if a ms has passed.
-bool pwm_is_ms_passed();
+// Returns true if PWM total delay has passed.
+bool pwm_is_delay_passed();
 
 #endif

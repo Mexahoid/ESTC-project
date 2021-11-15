@@ -15,6 +15,10 @@ volatile int pwm_state_on;
 volatile int pwm_gpio_percent_ms;
 // Current ms for inner operations.
 volatile int current_ms = 0;
+// Total time that a GPIO suffers from PWM.
+int delay_total = 0;
+// Current ms.
+volatile int delay_current = 0;
 // Time that PWM should be ON.
 volatile int pwm_on_time = 0;
 // us timestamp for tick updates.
@@ -31,10 +35,13 @@ void pwm_modulate(int gpio)
 
 void pwm_percentage_recalc()
 {
-    if (!pwm_is_ms_passed())
+    // Somehow only this makes it really work as a us-ms-s
+    if (pwm_counter % (PWM_COUNTER_MAX / 6) != 0)
         return;
 
     current_ms++;
+
+    delay_current++;
 
     pwm_on_time = pwm_duty_delay_us * pwm_percentage / 100;
     if (current_ms % pwm_gpio_percent_ms != 0)
@@ -51,19 +58,24 @@ void pwm_percentage_recalc()
     }
 }
 
-bool pwm_is_ms_passed()
+bool pwm_is_delay_passed()
 {
-    // Somehow only this makes it really work as a us-ms-s
-    return pwm_counter % (PWM_COUNTER_MAX / 6) == 0;
+    if (delay_current >= delay_total)
+    {
+        delay_current = 0;
+        return true;
+    }
+    return false;
 }
 
-void pwm_init(void (*action)(int, int), int state_on, int on_time)
+void pwm_init(void (*action)(int, int), int state_on, int total_time)
 {
     nrfx_systick_init();
     nrfx_systick_get(&timestamp_pwm_us);
     pwm_state_on = state_on;
     pwm_action = action;
-    pwm_gpio_percent_ms = on_time / 100 / 2;
+    delay_total = total_time;
+    pwm_gpio_percent_ms = total_time / 100 / 2;
 }
 
 void pwm_tick_update()
