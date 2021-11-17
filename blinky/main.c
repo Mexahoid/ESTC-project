@@ -75,7 +75,9 @@ int main(void)
             continue;
 
         if (pwm_is_delay_passed(&pwm_context))
+        {
             led_change_for_next();
+        }
 
         pwm_percentage_recalc(&pwm_context);
     }
