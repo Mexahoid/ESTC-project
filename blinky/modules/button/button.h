@@ -21,7 +21,7 @@ typedef enum
 void button_interrupt_init();
 
 // Checks and writes to is_automatic whether the button was doubleclicked.
-bool button_check_for_doubleclick();
+int button_check_for_clicktype();
 
 // Interrupt handler.
 void button_in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);

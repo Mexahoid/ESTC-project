@@ -36,6 +36,8 @@
 
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
+#include "nrf_log.h"
+#include "nrf_log_backend_usb.h"
 
 #include "log.h"
 #include "led.h"
@@ -66,7 +68,7 @@ int main(void)
 
         pwm_modulate(&pwm_context, led_get_current());
 
-        bool dc_present = button_check_for_doubleclick();
+        bool dc_present = button_check_for_clicktype();
 
         if (dc_present)
             is_automatic = !is_automatic;
@@ -77,6 +79,8 @@ int main(void)
         if (pwm_is_delay_passed(&pwm_context))
         {
             led_change_for_next();
+            NRF_LOG_INFO("Blink");
+            LOG_BACKEND_USB_PROCESS();
         }
 
         pwm_percentage_recalc(&pwm_context);
