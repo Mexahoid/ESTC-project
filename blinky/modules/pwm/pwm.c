@@ -1,93 +1,82 @@
 #include "pwm.h"
 
-// Inner module counter [0 - PWM_COUNTER_MAX].
-volatile int pwm_counter = 0;
-// PWM duty percentage.
-volatile int pwm_percentage = 0;
-// Amount (in us) for a cycle.
-int pwm_duty_delay_us = 1000000 / PWM_FREQUENCY;
-// Delegate for PWM modulation.
-void (*pwm_action)(int, int);
-// Default ON state for a GPIO, goes from init.
-volatile int pwm_state_on;
-// ms delay for a PWM percent.
-volatile int pwm_gpio_percent_ms;
-// Current ms for inner operations.
-volatile int current_ms = 0;
-// Total time that a GPIO suffers from PWM.
-int delay_total = 0;
-// Time that PWM should be ON.
-volatile int pwm_on_time = 0;
-// us timestamp for tick updates.
-nrfx_systick_state_t timestamp_pwm_us;
-// ms timestamp for tick updates.
-nrfx_systick_state_t timestamp_pwm_ms;
+// Was systic initialized or not.
+bool is_systick_init = false;
 
 // Updates inner counter every PWM percent delay.
-static void tick_update()
+static void tick_update(pwm_ctx_t* context)
 {
-    if (!nrfx_systick_test(&timestamp_pwm_us, pwm_gpio_percent_ms))
+    if (!nrfx_systick_test(&(context->timestamp_pwm_us), context->pwm_gpio_percent_ms))
         return;
-    nrfx_systick_get(&timestamp_pwm_us);
-    pwm_counter += pwm_gpio_percent_ms;
-    if (pwm_counter >= PWM_COUNTER_MAX)
-        pwm_counter = 0;
+    nrfx_systick_get(&(context->timestamp_pwm_us));
+    context->pwm_counter += context->pwm_gpio_percent_ms;
+    if (context->pwm_counter >= PWM_COUNTER_MAX)
+        context->pwm_counter = 0;
 }
 
 // Returns true if at least ms has passed.
-static bool is_ms_passed()
+static bool is_ms_passed(pwm_ctx_t* context)
 {
-    if (!nrfx_systick_test(&timestamp_pwm_ms, PWM_MAX_MS_DELAY))
+    if (!nrfx_systick_test(&(context->timestamp_pwm_ms), PWM_MAX_MS_DELAY))
         return false;
-    nrfx_systick_get(&timestamp_pwm_ms);
-    current_ms++;
+    nrfx_systick_get(&(context->timestamp_pwm_ms));
+    context->current_ms++;
     return true;
 }
 
 
-void pwm_modulate(int gpio)
+void pwm_modulate(pwm_ctx_t* context, int gpio)
 {
-    tick_update();
-    if (pwm_counter < pwm_on_time)
-        pwm_action(gpio, pwm_state_on);
+    tick_update(context);
+    if (context->pwm_counter < context->pwm_on_time)
+        context->pwm_action(gpio, context->pwm_state_on);
     else
-        pwm_action(gpio, !pwm_state_on);
+        context->pwm_action(gpio, !context->pwm_state_on);
 }
 
-void pwm_percentage_recalc()
+void pwm_percentage_recalc(pwm_ctx_t* context)
 {
-    if (!is_ms_passed())
+    if (!is_ms_passed(context))
         return;
 
-    if (current_ms % pwm_gpio_percent_ms != 0)
+    if (context->current_ms % context->pwm_gpio_percent_ms != 0)
         return;
 
-    pwm_on_time = pwm_duty_delay_us * pwm_percentage / 100;
+    context->pwm_on_time = context->pwm_duty_delay_us * context->pwm_percentage / 100;
 
-    if (current_ms < delay_total / 2 && pwm_percentage < 100)
-        pwm_percentage++;
+    if (context->current_ms < context->delay_total / 2 && context->pwm_percentage < 100)
+        context->pwm_percentage++;
     else
-        pwm_percentage--;
+        context->pwm_percentage--;
 }
 
-bool pwm_is_delay_passed()
+bool pwm_is_delay_passed(pwm_ctx_t* context)
 {
-    if (current_ms >= delay_total)
+    if (context->current_ms >= context->delay_total)
     {
-        current_ms = 0;
-        pwm_percentage = 0;
+        context->current_ms = 0;
+        context->pwm_percentage = 0;
         return true;
     }
     return false;
 }
 
-void pwm_init(void (*action)(int, int), int state_on, int total_time)
+void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int total_time, int frequency)
 {
-    nrfx_systick_init();
-    nrfx_systick_get(&timestamp_pwm_us);
-    nrfx_systick_get(&timestamp_pwm_ms);
-    pwm_state_on = state_on;
-    pwm_action = action;
-    delay_total = total_time;
-    pwm_gpio_percent_ms = total_time / 100 / 2;
+    if (!is_systick_init)
+    {
+        nrfx_systick_init();
+        is_systick_init = true;
+    }
+
+    nrfx_systick_get(&(context->timestamp_pwm_us));
+    nrfx_systick_get(&(context->timestamp_pwm_ms));
+    context->pwm_state_on = state_on;
+    context->pwm_action = action;
+    context->delay_total = total_time;
+    context->pwm_gpio_percent_ms = total_time / 100 / 2;
+    context->pwm_duty_delay_us = 1000000 / frequency;
+    context->current_ms = 0;
+    context->pwm_percentage = 0;
+    context->pwm_on_time = 0;
 }

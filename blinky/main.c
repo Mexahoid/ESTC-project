@@ -37,13 +37,13 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
-#include "nrf_log.h"
-#include "nrf_log_backend_usb.h"
-
 #include "log.h"
 #include "led.h"
 #include "button.h"
 #include "pwm.h"
+
+// Frequency of PWM in kHz.
+#define PWM_FREQUENCY 1000
 
 // Delegate for PWM methods.
 void gpio_action(int gpio, int state_on)
@@ -55,7 +55,8 @@ int main(void)
 {
     logs_init();
     leds_init();
-    pwm_init(gpio_action, LED_ON, BLINK_DELAY_MS);
+    pwm_ctx_t pwm_context;
+    pwm_init(&pwm_context, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
     button_interrupt_init();
 
     bool is_automatic = false;
@@ -63,7 +64,7 @@ int main(void)
     {
         logs_empty_action();
 
-        pwm_modulate(led_get_current());
+        pwm_modulate(&pwm_context, led_get_current());
 
         bool dc_present = button_check_for_doubleclick();
 
@@ -73,9 +74,9 @@ int main(void)
         if (!is_automatic)
             continue;
 
-        if (pwm_is_delay_passed())
+        if (pwm_is_delay_passed(&pwm_context))
             led_change_for_next();
 
-        pwm_percentage_recalc();
+        pwm_percentage_recalc(&pwm_context);
     }
 }
