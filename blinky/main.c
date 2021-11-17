@@ -37,6 +37,9 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
+#include "nrf_log.h"
+#include "nrf_log_backend_usb.h"
+
 #include "log.h"
 #include "led.h"
 #include "button.h"
@@ -56,11 +59,9 @@ int main(void)
     button_interrupt_init();
 
     bool is_automatic = false;
-
     while (true)
     {
         logs_empty_action();
-
         pwm_tick_update();
 
         pwm_modulate(led_get_current());
@@ -74,9 +75,7 @@ int main(void)
             continue;
 
         if (pwm_is_delay_passed())
-        {
             led_change_for_next();
-        }
 
         pwm_percentage_recalc();
     }

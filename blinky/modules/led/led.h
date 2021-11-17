@@ -2,8 +2,6 @@
 #define MY_MODULE_LED
 
 #include "nrf_gpio.h"
-#include "nrf_log.h"
-#include "nrf_log_backend_usb.h"
 
 // Microseconds delay for a one blink.
 #define BLINK_DELAY_MS 1000
