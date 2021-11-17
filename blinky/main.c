@@ -62,7 +62,6 @@ int main(void)
     while (true)
     {
         logs_empty_action();
-        pwm_tick_update();
 
         pwm_modulate(led_get_current());
 

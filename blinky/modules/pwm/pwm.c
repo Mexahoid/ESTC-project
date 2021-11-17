@@ -23,8 +23,31 @@ nrfx_systick_state_t timestamp_pwm_us;
 // ms timestamp for tick updates.
 nrfx_systick_state_t timestamp_pwm_ms;
 
+// Updates inner counter every PWM percent delay.
+static void tick_update()
+{
+    if (!nrfx_systick_test(&timestamp_pwm_us, pwm_gpio_percent_ms))
+        return;
+    nrfx_systick_get(&timestamp_pwm_us);
+    pwm_counter += pwm_gpio_percent_ms;
+    if (pwm_counter >= PWM_COUNTER_MAX)
+        pwm_counter = 0;
+}
+
+// Returns true if at least ms has passed.
+static bool is_ms_passed()
+{
+    if (!nrfx_systick_test(&timestamp_pwm_ms, PWM_MAX_MS_DELAY))
+        return false;
+    nrfx_systick_get(&timestamp_pwm_ms);
+    current_ms++;
+    return true;
+}
+
+
 void pwm_modulate(int gpio)
 {
+    tick_update();
     if (pwm_counter < pwm_on_time)
         pwm_action(gpio, pwm_state_on);
     else
@@ -33,7 +56,7 @@ void pwm_modulate(int gpio)
 
 void pwm_percentage_recalc()
 {
-    if (!pwm_is_ms_passed())
+    if (!is_ms_passed())
         return;
 
     if (current_ms % pwm_gpio_percent_ms != 0)
@@ -67,23 +90,4 @@ void pwm_init(void (*action)(int, int), int state_on, int total_time)
     pwm_action = action;
     delay_total = total_time;
     pwm_gpio_percent_ms = total_time / 100 / 2;
-}
-
-bool pwm_is_ms_passed()
-{
-    if (!nrfx_systick_test(&timestamp_pwm_ms, PWM_MAX_MS_DELAY))
-        return false;
-    nrfx_systick_get(&timestamp_pwm_ms);
-    current_ms++;
-    return true;
-}
-
-void pwm_tick_update()
-{
-    if (!nrfx_systick_test(&timestamp_pwm_us, pwm_gpio_percent_ms))
-        return;
-    nrfx_systick_get(&timestamp_pwm_us);
-    pwm_counter += pwm_gpio_percent_ms;
-    if (pwm_counter >= PWM_COUNTER_MAX)
-        pwm_counter = 0;
 }

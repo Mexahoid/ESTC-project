@@ -19,13 +19,7 @@ void pwm_percentage_recalc();
 // Initializes PWM module.
 void pwm_init(void (*action)(int, int), int state_on, int on_time);
 
-// Updates inner counter every PWM percent delay.
-void pwm_tick_update();
-
 // Returns true if PWM total delay has passed.
 bool pwm_is_delay_passed();
-
-// Returns true if PWM as ms has passed.
-bool pwm_is_ms_passed();
 
 #endif
