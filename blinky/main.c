@@ -62,15 +62,22 @@ int main(void)
     button_interrupt_init();
 
     bool is_automatic = false;
+    button_state_t prev_state = NOP;
     while (true)
     {
         logs_empty_action();
 
         pwm_modulate(&pwm_context, led_get_current());
 
-        bool dc_present = button_check_for_clicktype();
+        button_state_t dc_present = button_check_for_clicktype();
+        if (dc_present != prev_state)
+        {
+            NRF_LOG_INFO("Current button code: %d", dc_present);
+            LOG_BACKEND_USB_PROCESS();
+            prev_state = dc_present;
+        }
 
-        if (dc_present)
+        if (dc_present == 1)
             is_automatic = !is_automatic;
 
         if (!is_automatic)
@@ -79,8 +86,6 @@ int main(void)
         if (pwm_is_delay_passed(&pwm_context))
         {
             led_change_for_next();
-            NRF_LOG_INFO("Blink");
-            LOG_BACKEND_USB_PROCESS();
         }
 
         pwm_percentage_recalc(&pwm_context);
