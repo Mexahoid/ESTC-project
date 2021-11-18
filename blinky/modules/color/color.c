@@ -1,6 +1,36 @@
 #include "color.h"
 #include <math.h>
 
+// Current color mode.
+color_mode_t color_mode = NOP;
+
+static color_hsv_t color_current;
+
+
+
+
+
+
+
+void color_change_mode()
+{
+    if (color_mode == BRI)
+        color_mode = NOP;
+    else
+        color_mode++;
+}
+
+color_pwm_t color_convert_pwm(color_rgb_t input)
+{
+    color_pwm_t color;
+
+    color.r = input.r * 100 / 255;
+    color.g = input.g * 100 / 255;
+    color.b = input.b * 100 / 255;
+
+    return color;
+}
+
 color_rgb_t color_convert(color_hsv_t input)
 {
     color_rgb_t real_color;

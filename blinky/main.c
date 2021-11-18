@@ -43,6 +43,7 @@
 #include "led.h"
 #include "button.h"
 #include "pwm.h"
+#include "color.h"
 
 // Frequency of PWM in kHz.
 #define PWM_FREQUENCY 1000

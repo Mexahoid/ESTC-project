@@ -1,6 +1,6 @@
 #include "button.h"
 
-#define BUTTON_LOG
+//#define BUTTON_LOG
 
 // Current button press flag.
 static volatile bool button_pressed_flag = false;
@@ -15,6 +15,7 @@ static volatile int counter_ms = 0;
 // Is button long pressed.
 static volatile bool long_press_present = false;
 
+// Interrupt handler.
 static void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     UNUSED_VARIABLE(pin);
