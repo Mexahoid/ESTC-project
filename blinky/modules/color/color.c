@@ -6,11 +6,42 @@ color_mode_t color_mode = NOP;
 
 static color_hsv_t color_current;
 
+static color_hsv_t color_current_incdec;
 
+void color_init()
+{
+    color_current_incdec.h = 1;
+    color_current_incdec.s = 1;
+    color_current_incdec.v = 1;
+}
 
-
-
-
+void color_mode_increase()
+{
+    switch (color_mode)
+    {
+    case NOP:
+        break;
+    case HUE:
+        color_current.h += color_current_incdec.h;
+        if (color_current.h >= 360)
+            color_current.h = 0;
+        break;
+    case SAT:
+        color_current.s += color_current_incdec.s;
+        if (color_current.s >= 100)
+            color_current_incdec.s = -1;
+        if (color_current.s <= 0)
+            color_current_incdec.s = 1;
+        break;
+    case BRI:
+        color_current.v += color_current_incdec.v;
+        if (color_current.v >= 100)
+            color_current_incdec.v = -1;
+        if (color_current.v <= 0)
+            color_current_incdec.v = 1;
+        break;
+    }
+}
 
 void color_change_mode()
 {
@@ -20,71 +51,56 @@ void color_change_mode()
         color_mode++;
 }
 
-color_pwm_t color_convert_pwm(color_rgb_t input)
+void color_convert(color_pwm_t *color)
 {
-    color_pwm_t color;
-
-    color.r = input.r * 100 / 255;
-    color.g = input.g * 100 / 255;
-    color.b = input.b * 100 / 255;
-
-    return color;
-}
-
-color_rgb_t color_convert(color_hsv_t input)
-{
-    color_rgb_t real_color;
-
-    int c = input.s * input.v;
-    int h_segm = input.h / 60;
-    int x = c * (100 - fabs((h_segm) % 2 - 100));
-    int m = input.v - c;
+    int hi = (int)(color_current.h / 60) % 6;
+    double vmin = (100.0 - color_current.s) * color_current.v / 100.0;
+    double a = (color_current.v - vmin) * (color_current.h % 60) / 60.0;
+    double vinc = vmin + a;
+    double vdec = color_current.v - a;
 
     double r = 0, g = 0, b = 0;
 
-    switch (h_segm)
+    switch (hi)
     {
-        case 0:
-            r = c;
-            g = x;
-            b = 0;
+    case 0:
+        r = color_current.v;
+        g = vinc;
+        b = vmin;
         break;
 
-        case 1:
-            r = x;
-            g = c;
-            b = 0;
+    case 1:
+        r = vdec;
+        g = color_current.v;
+        b = vmin;
         break;
 
-        case 2:
-            r = 0;
-            g = c;
-            b = x;
+    case 2:
+        r = vmin;
+        g = color_current.v;
+        b = vinc;
         break;
 
-        case 3:
-            r = 0;
-            g = x;
-            b = c;
+    case 3:
+        r = vmin;
+        g = vdec;
+        b = color_current.v;
         break;
 
-        case 4:
-            r = x;
-            g = 0;
-            b = c;
+    case 4:
+        r = vinc;
+        g = vmin;
+        b = color_current.v;
         break;
 
-        case 5:
-            r = c;
-            g = 0;
-            b = x;
+    case 5:
+        r = color_current.v;
+        g = vmin;
+        b = vdec;
         break;
     }
 
-    real_color.r = (r + m) * 255 / 100;
-    real_color.g = (g + m) * 255 / 100;
-    real_color.b = (b + m) * 255 / 100;
-
-
-    return real_color;
+    color->r = (int)r;
+    color->g = (int)g;
+    color->b = (int)b;
 }
