@@ -31,22 +31,29 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "boards.h"
-
 #include "nordic_common.h"
 
-#include "app_usbd.h"
-#include "app_usbd_serial_num.h"
-#include "nrf_log.h"
-#include "nrf_log_backend_usb.h"
-
-#include "log.h"
-#include "led.h"
-#include "button.h"
 #include "pwm.h"
-#include "color.h"
-
 // Frequency of PWM in kHz.
 #define PWM_FREQUENCY 1000
+
+#include "led.h"
+// Microseconds delay for a one blink.
+#define BLINK_DELAY_MS 1000
+
+#include "button.h"
+#include "color.h"
+
+// Enables logging in main.
+//#define MAIN_LOG
+#ifdef MAIN_LOG
+#include "nrf_log.h"
+#include "nrf_log_backend_usb.h"
+#include "app_usbd.h"
+#include "app_usbd_serial_num.h"
+#include "log.h"
+#endif
+
 
 // Delegate for PWM methods.
 void gpio_action(int gpio, int state_on)
@@ -56,39 +63,96 @@ void gpio_action(int gpio, int state_on)
 
 int main(void)
 {
-    logs_init();
     leds_init();
-    pwm_ctx_t pwm_context;
-    pwm_init(&pwm_context, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    color_init();
+
+    pwm_ctx_t pwm_context_yellow, pwm_context_red, pwm_context_green, pwm_context_blue;
+    pwm_init(&pwm_context_yellow, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    pwm_init(&pwm_context_red, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    pwm_init(&pwm_context_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    pwm_init(&pwm_context_blue, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+
+    pwm_context_red.pwm_is_recalcable = false;
+    pwm_context_green.pwm_is_recalcable = false;
+    pwm_context_blue.pwm_is_recalcable = false;
     button_interrupt_init();
 
-    bool is_automatic = false;
-    button_state_t prev_state = NOP;
+    color_pwm_t color;
+    color_convert(&color);
+
+#ifdef MAIN_LOG
+    logs_init();
+    color_pwm_t color_old;
+    color_old.r = color.r;
+    color_old.g = color.g;
+    color_old.b = color.b;
+#endif
+
     while (true)
     {
+#ifdef MAIN_LOG
         logs_empty_action();
+#endif
 
-        pwm_modulate(&pwm_context, led_get_current());
+        pwm_modulate(&pwm_context_yellow, LED_YELLOW);
+        pwm_modulate(&pwm_context_red, LED_RED);
+        pwm_modulate(&pwm_context_green, LED_GREEN);
+        pwm_modulate(&pwm_context_blue, LED_BLUE);
+        color_mode_t cm = color_get_mode();
+        switch (cm)
+        {
+        case OFF:
+            pwm_context_yellow.delay_total = BLINK_DELAY_MS;
+            pwm_context_yellow.pwm_is_recalcable = false;
+            pwm_set_percentage(&pwm_context_yellow, 0);
+            break;
+        case HUE:
+            pwm_context_yellow.delay_total = BLINK_DELAY_MS;
+            pwm_context_yellow.pwm_is_recalcable = true;
+            pwm_percentage_recalc(&pwm_context_yellow);
+            break;
+        case SAT:
+            pwm_context_yellow.delay_total = BLINK_DELAY_MS / 2;
+            pwm_context_yellow.pwm_is_recalcable = true;
+            pwm_percentage_recalc(&pwm_context_yellow);
+            break;
+        case BRI:
+            pwm_context_yellow.delay_total = BLINK_DELAY_MS;
+            pwm_context_yellow.pwm_is_recalcable = false;
+            pwm_set_percentage(&pwm_context_yellow, 100);
+            break;
+        }
 
         button_state_t dc_present = button_check_for_clicktype();
-        if (dc_present != prev_state)
+
+        pwm_set_percentage(&pwm_context_red, color.r);
+        pwm_set_percentage(&pwm_context_green, color.g);
+        pwm_set_percentage(&pwm_context_blue, color.b);
+
+        if (dc_present == 2 && cm != OFF)
         {
-            NRF_LOG_INFO("Current button code: %d", dc_present);
-            LOG_BACKEND_USB_PROCESS();
-            prev_state = dc_present;
+            color_increase_mode_value();
+            color_convert(&color);
+
+#ifdef MAIN_LOG
+            if (color_old.r != color.r || color_old.g != color.g || color_old.b != color.b)
+            {
+                NRF_LOG_INFO("R: %d, G: %d, B: %d", color.r, color.g, color.b);
+                LOG_BACKEND_USB_PROCESS();
+                color_old.r = color.r;
+                color_old.g = color.g;
+                color_old.b = color.b;
+            }
+#endif
         }
 
         if (dc_present == 1)
-            is_automatic = !is_automatic;
-
-        if (!is_automatic)
-            continue;
-
-        if (pwm_is_delay_passed(&pwm_context))
         {
-            led_change_for_next();
+            color_change_mode();
+#ifdef MAIN_LOG
+            NRF_LOG_INFO("Color mode changed: %d", color_get_mode());
+            LOG_BACKEND_USB_PROCESS();
+#endif
         }
-
-        pwm_percentage_recalc(&pwm_context);
     }
 }

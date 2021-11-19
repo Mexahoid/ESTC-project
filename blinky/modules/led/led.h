@@ -3,9 +3,6 @@
 
 #include "nrf_gpio.h"
 
-// Microseconds delay for a one blink.
-#define BLINK_DELAY_MS 1000
-
 // Enum that holds LED pin codes.
 typedef enum
 {
@@ -22,19 +19,11 @@ typedef enum
     LED_OFF = 1
 } led_state_t;
 
-// Inits LED as a GPIO.
-void led_init(led_t led);
-
 // Changes LED state to ON or OFF.
 void led_change_state_to(led_t led, led_state_t state);
 
 // Inits all LEDs.
 void leds_init();
 
-// Returns current working LED.
-led_t led_get_current();
-
-// Sets next LED as an active one.
-void led_change_for_next();
 
 #endif

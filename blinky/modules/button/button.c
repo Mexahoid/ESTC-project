@@ -1,9 +1,7 @@
 #include "button.h"
 
-//#define BUTTON_LOG
-
 // Current button press flag.
-static volatile bool button_pressed_flag = false;
+static volatile bool is_button_pressed = false;
 // Timestamp for the us-ms counter.
 static nrfx_systick_state_t timestamp;
 // Button clicks counter.
@@ -13,7 +11,7 @@ static volatile int counter_us = 0;
 // ms counter.
 static volatile int counter_ms = 0;
 // Is button long pressed.
-static volatile bool long_press_present = false;
+static volatile bool is_long_pressed = false;
 
 // Interrupt handler.
 static void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
@@ -23,15 +21,13 @@ static void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 
     static nrfx_systick_state_t button_timestamp;
 
-    button_pressed_flag = !button_pressed_flag;
+    is_button_pressed = !is_button_pressed;
 
     // Chatter mitigation
     if (!nrfx_systick_test(&button_timestamp, 5000))
         return;
     nrfx_systick_get(&button_timestamp);
     clicks++;
-    //if (clicks > 4)
-    //    clicks = 0;
 #ifdef BUTTON_LOG
     NRF_LOG_INFO("Clicks: %d", clicks);
     LOG_BACKEND_USB_PROCESS();
@@ -71,9 +67,9 @@ button_state_t button_check_for_clicktype()
     {
         counter_ms = 0;
 
-        if (clicks == 1 && button_pressed_flag)
+        if (clicks == 1 && is_button_pressed)
         {
-            long_press_present = true;
+            is_long_pressed = true;
 #ifdef BUTTON_LOG
             NRF_LOG_INFO("Long press acquired");
             LOG_BACKEND_USB_PROCESS();
@@ -84,7 +80,7 @@ button_state_t button_check_for_clicktype()
         if (clicks > 0)
         {
             clicks = 0;
-            long_press_present = false;
+            is_long_pressed = false;
 #ifdef BUTTON_LOG
             NRF_LOG_INFO("No second clicks");
             LOG_BACKEND_USB_PROCESS();
@@ -94,18 +90,18 @@ button_state_t button_check_for_clicktype()
     }
     else
     {
-        if (long_press_present)
+        if (is_long_pressed)
         {
-            if (button_pressed_flag)
+            if (is_button_pressed)
                 return LONGPRESS;
             else
-                long_press_present = false;
+                is_long_pressed = false;
         }
 
         if (clicks > 3)
         {
             clicks = 0;
-            long_press_present = false;
+            is_long_pressed = false;
 #ifdef BUTTON_LOG
             NRF_LOG_INFO("Double click acquired - changing mode");
             LOG_BACKEND_USB_PROCESS();

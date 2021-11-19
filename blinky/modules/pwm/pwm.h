@@ -7,6 +7,8 @@
 #define PWM_COUNTER_MAX 1000
 // Max amount of ms in s (1000 lol).
 #define PWM_MAX_MS_DELAY 1000
+// Inner counter us delay.
+#define PWM_TICK_DELAY_US 20
 
 // PWM context struct.
 typedef struct
@@ -30,9 +32,11 @@ typedef struct
     // Time that PWM should be ON.
     volatile int pwm_on_time;
     // us timestamp for tick updates.
-    nrfx_systick_state_t timestamp_pwm_us;
+    nrfx_systick_state_t pwm_timestamp_us;
     // ms timestamp for tick updates.
-    nrfx_systick_state_t timestamp_pwm_ms;
+    nrfx_systick_state_t pwm_timestamp_ms;
+    // Is current context GPIO automatically recalcable.
+    bool pwm_is_recalcable;
 } pwm_ctx_t;
 
 
@@ -47,5 +51,8 @@ void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int on
 
 // Returns true if PWM total delay has passed.
 bool pwm_is_delay_passed(pwm_ctx_t* context);
+
+// Sets PWM percentage.
+void pwm_set_percentage(pwm_ctx_t* context, int percentage);
 
 #endif

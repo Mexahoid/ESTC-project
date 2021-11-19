@@ -2,99 +2,124 @@
 #include <math.h>
 
 // Current color mode.
-color_mode_t color_mode = NOP;
-
-static color_hsv_t color_current;
-
-static color_hsv_t color_current_incdec;
+static color_mode_t mode;
+// Current HSV color
+static color_hsv_t current;
+// Increase/decrease values for model.
+static color_hsv_t current_incdec;
+// Timestamp for smooth changing.
+static nrfx_systick_state_t timestamp_pwm_us;
 
 void color_init()
 {
-    color_current_incdec.h = 1;
-    color_current_incdec.s = 1;
-    color_current_incdec.v = 1;
+    mode = OFF;
+    current.h = COLOR_HUE_DEFAULT;
+    current.s = COLOR_SAT_DEFAULT;
+    if (current.s > 100)
+        current.s = 100;
+    if (current.s < 0)
+        current.s = 0;
+    current.v = COLOR_BRI_DEFAULT;
+    if (current.v > 100)
+        current.v = 100;
+    if (current.v < 0)
+        current.v = 0;
+
+    current.h = current.h % 360;
+    current_incdec.h = 1;
+    current_incdec.s = current.s >= 100 ? -1 : 1;
+    current_incdec.v = current.v >= 100 ? -1 : 1;
 }
 
-void color_mode_increase()
+void color_increase_mode_value()
 {
-    switch (color_mode)
+    if (!nrfx_systick_test(&timestamp_pwm_us, COLOR_DELAY_US))
+        return;
+    nrfx_systick_get(&timestamp_pwm_us);
+
+    switch (mode)
     {
-    case NOP:
+    case OFF:
         break;
     case HUE:
-        color_current.h += color_current_incdec.h;
-        if (color_current.h >= 360)
-            color_current.h = 0;
+        current.h += current_incdec.h;
+        if (current.h >= 360)
+            current.h = 0;
         break;
     case SAT:
-        color_current.s += color_current_incdec.s;
-        if (color_current.s >= 100)
-            color_current_incdec.s = -1;
-        if (color_current.s <= 0)
-            color_current_incdec.s = 1;
+        current.s += current_incdec.s;
+        if (current.s >= 100)
+            current_incdec.s = -1;
+        if (current.s <  1)
+            current_incdec.s = 1;
         break;
     case BRI:
-        color_current.v += color_current_incdec.v;
-        if (color_current.v >= 100)
-            color_current_incdec.v = -1;
-        if (color_current.v <= 0)
-            color_current_incdec.v = 1;
+        current.v += current_incdec.v;
+        if (current.v >= 100)
+            current_incdec.v = -1;
+        if (current.v < 1)
+            current_incdec.v = 1;
         break;
     }
 }
 
 void color_change_mode()
 {
-    if (color_mode == BRI)
-        color_mode = NOP;
+    if (mode == BRI)
+        mode = OFF;
     else
-        color_mode++;
+        mode++;
+}
+
+color_mode_t color_get_mode()
+{
+    return mode;
 }
 
 void color_convert(color_pwm_t *color)
 {
-    int hi = (int)(color_current.h / 60) % 6;
-    double vmin = (100.0 - color_current.s) * color_current.v / 100.0;
-    double a = (color_current.v - vmin) * (color_current.h % 60) / 60.0;
+    int hi = (int)(current.h / 60) % 6;
+    double vmin = (100.0 - current.s) * current.v / 100.0;
+    double a = (current.v - vmin) * (current.h % 60) / 60.0;
     double vinc = vmin + a;
-    double vdec = color_current.v - a;
+    double vdec = current.v - a;
 
     double r = 0, g = 0, b = 0;
 
     switch (hi)
     {
     case 0:
-        r = color_current.v;
+        r = current.v;
         g = vinc;
         b = vmin;
         break;
 
     case 1:
         r = vdec;
-        g = color_current.v;
+        g = current.v;
         b = vmin;
         break;
 
     case 2:
         r = vmin;
-        g = color_current.v;
+        g = current.v;
         b = vinc;
         break;
 
     case 3:
         r = vmin;
         g = vdec;
-        b = color_current.v;
+        b = current.v;
         break;
 
     case 4:
         r = vinc;
         g = vmin;
-        b = color_current.v;
+        b = current.v;
         break;
 
     case 5:
-        r = color_current.v;
+        r = current.v;
         g = vmin;
         b = vdec;
         break;

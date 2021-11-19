@@ -1,12 +1,15 @@
 #ifndef MY_MODULE_COLOR
 #define MY_MODULE_COLOR
 
-// RGB color 255-255-255.
-typedef struct {
-    int r;
-    int g;
-    int b;
-} color_rgb_t;
+#include "nrfx_systick.h"
+
+// Delay between incdec calls (in us).
+#define COLOR_DELAY_US 45000
+
+// Default values for init.
+#define COLOR_HUE_DEFAULT 0
+#define COLOR_SAT_DEFAULT 100
+#define COLOR_BRI_DEFAULT 100
 
 // HSV color 360-100-100.
 typedef struct {
@@ -25,7 +28,7 @@ typedef struct {
 // Color modes.
 typedef enum {
     // No input (LED1 is always off)​.
-    NOP,
+    OFF,
     // Hue modification (LED1 blinks slowly)​.
     HUE,
     // Saturation modification (LED1 blinks fast)​.
@@ -34,12 +37,19 @@ typedef enum {
     BRI
 } color_mode_t;
 
+// Converts HSV model color to PWM model.
 void color_convert(color_pwm_t *color);
 
 // Changes mode NOP - HUE - SAT - BRI - NOP.
 void color_change_mode();
 
 // Changes value based on current mode.
-void color_mode_increase();
+void color_increase_mode_value();
+
+// Returns current color mode.
+color_mode_t color_get_mode();
+
+// Initializes color module.
+void color_init();
 
 #endif

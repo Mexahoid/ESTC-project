@@ -1,12 +1,18 @@
 #ifndef MY_MODULE_BUTTON
 #define MY_MODULE_BUTTON
 
+// Enables button logging.
+//#define BUTTON_LOG
+#ifdef BUTTON_LOG
+#include "nrf_log.h"
+#include "nrf_log_backend_usb.h"
+#endif
+
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
 #include "nrfx_systick.h"
-#include "nrf_log.h"
-#include "nrf_log_backend_usb.h"
 #include "app_timer.h"
+
 
 // Delay between clicks.
 #define BUTTON_DOUBLECLICK_DELAY_MS 500
