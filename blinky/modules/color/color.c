@@ -48,17 +48,13 @@ void color_increase_mode_value()
         break;
     case CLR_SAT:
         current.s += current_incdec.s;
-        if (current.s >= 100)
-            current_incdec.s = -1;
-        if (current.s <  1)
-            current_incdec.s = 1;
+        if (current.s >= 100 || current.s <  1)
+            current_incdec.s *= -1;
         break;
     case CLR_BRI:
         current.v += current_incdec.v;
-        if (current.v >= 100)
-            current_incdec.v = -1;
-        if (current.v < 1)
-            current_incdec.v = 1;
+        if (current.v >= 100 || current.v < 1)
+            current_incdec.v *= -1;
         break;
     }
 }
