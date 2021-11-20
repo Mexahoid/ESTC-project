@@ -76,7 +76,7 @@ color_mode_t color_get_mode()
     return mode;
 }
 
-void color_convert(color_pwm_t *color)
+void color_get_current_pwm_percentages(color_pwm_t *color)
 {
     int hi = (int)(current.h / 60) % 6;
     double vmin = (100.0 - current.s) * current.v / 100.0;

@@ -79,7 +79,7 @@ int main(void)
     button_interrupt_init();
 
     color_pwm_t color;
-    color_convert(&color);
+    color_get_current_pwm_percentages(&color);
 
 #ifdef MAIN_LOG
     logs_init();
@@ -133,7 +133,7 @@ int main(void)
         if (button_state == BTN_LONGPRESS && cm != CLR_OFF)
         {
             color_increase_mode_value();
-            color_convert(&color);
+            color_get_current_pwm_percentages(&color);
 
 #ifdef MAIN_LOG
             if (color_old.r != color.r || color_old.g != color.g || color_old.b != color.b)
