@@ -45,7 +45,7 @@
 #include "color.h"
 
 // Enables logging in main.
-//#define MAIN_LOG
+// #define MAIN_LOG
 #ifdef MAIN_LOG
 #include "nrf_log.h"
 #include "nrf_log_backend_usb.h"
@@ -66,8 +66,9 @@ int main(void)
     leds_init();
     color_init();
 
-    pwm_ctx_t pwm_context_yellow, pwm_context_red, pwm_context_green, pwm_context_blue;
-    pwm_init(&pwm_context_yellow, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    pwm_ctx_t pwm_context_led1, pwm_context_red, pwm_context_green, pwm_context_blue;
+
+    pwm_init(&pwm_context_led1, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
     pwm_init(&pwm_context_red, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
     pwm_init(&pwm_context_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
     pwm_init(&pwm_context_blue, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
@@ -94,42 +95,42 @@ int main(void)
         logs_empty_action();
 #endif
 
-        pwm_modulate(&pwm_context_yellow, LED_YELLOW);
-        pwm_modulate(&pwm_context_red, LED_RED);
-        pwm_modulate(&pwm_context_green, LED_GREEN);
-        pwm_modulate(&pwm_context_blue, LED_BLUE);
+        pwm_modulate(&pwm_context_led1, LED1_GREEN);
+        pwm_modulate(&pwm_context_red, LED2_RED);
+        pwm_modulate(&pwm_context_green, LED2_GREEN);
+        pwm_modulate(&pwm_context_blue, LED2_BLUE);
         color_mode_t cm = color_get_mode();
         switch (cm)
         {
-        case OFF:
-            pwm_context_yellow.delay_total = BLINK_DELAY_MS;
-            pwm_context_yellow.pwm_is_recalcable = false;
-            pwm_set_percentage(&pwm_context_yellow, 0);
+        case CLR_OFF:
+            pwm_context_led1.delay_total = BLINK_DELAY_MS;
+            pwm_context_led1.pwm_is_recalcable = false;
+            pwm_set_percentage(&pwm_context_led1, 0);
             break;
-        case HUE:
-            pwm_context_yellow.delay_total = BLINK_DELAY_MS;
-            pwm_context_yellow.pwm_is_recalcable = true;
-            pwm_percentage_recalc(&pwm_context_yellow);
+        case CLR_HUE:
+            pwm_context_led1.delay_total = BLINK_DELAY_MS;
+            pwm_context_led1.pwm_is_recalcable = true;
+            pwm_percentage_recalc(&pwm_context_led1);
             break;
-        case SAT:
-            pwm_context_yellow.delay_total = BLINK_DELAY_MS / 2;
-            pwm_context_yellow.pwm_is_recalcable = true;
-            pwm_percentage_recalc(&pwm_context_yellow);
+        case CLR_SAT:
+            pwm_context_led1.delay_total = BLINK_DELAY_MS / 2;
+            pwm_context_led1.pwm_is_recalcable = true;
+            pwm_percentage_recalc(&pwm_context_led1);
             break;
-        case BRI:
-            pwm_context_yellow.delay_total = BLINK_DELAY_MS;
-            pwm_context_yellow.pwm_is_recalcable = false;
-            pwm_set_percentage(&pwm_context_yellow, 100);
+        case CLR_BRI:
+            pwm_context_led1.delay_total = BLINK_DELAY_MS;
+            pwm_context_led1.pwm_is_recalcable = false;
+            pwm_set_percentage(&pwm_context_led1, 100);
             break;
         }
 
-        button_state_t dc_present = button_check_for_clicktype();
+        button_state_t button_state = button_check_for_clicktype();
 
         pwm_set_percentage(&pwm_context_red, color.r);
         pwm_set_percentage(&pwm_context_green, color.g);
         pwm_set_percentage(&pwm_context_blue, color.b);
 
-        if (dc_present == 2 && cm != OFF)
+        if (button_state == BTN_LONGPRESS && cm != CLR_OFF)
         {
             color_increase_mode_value();
             color_convert(&color);
@@ -146,7 +147,7 @@ int main(void)
 #endif
         }
 
-        if (dc_present == 1)
+        if (button_state == BTN_DOUBLECLICK)
         {
             color_change_mode();
 #ifdef MAIN_LOG

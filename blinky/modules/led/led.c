@@ -1,7 +1,7 @@
 #include "led.h"
 
 // Array with LED themselves.
-static led_t leds[] = {LED_YELLOW, LED_RED, LED_GREEN, LED_BLUE};
+static led_t leds[] = {LED1_GREEN, LED2_RED, LED2_GREEN, LED2_BLUE};
 
 // Inits LED as a GPIO.
 static void led_init(led_t led)

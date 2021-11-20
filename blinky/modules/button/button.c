@@ -74,7 +74,7 @@ button_state_t button_check_for_clicktype()
             NRF_LOG_INFO("Long press acquired");
             LOG_BACKEND_USB_PROCESS();
 #endif
-            return LONGPRESS;
+            return BTN_LONGPRESS;
         }
 
         if (clicks > 0)
@@ -85,7 +85,7 @@ button_state_t button_check_for_clicktype()
             NRF_LOG_INFO("No second clicks");
             LOG_BACKEND_USB_PROCESS();
 #endif
-            return NOP;
+            return BTN_NOP;
         }
     }
     else
@@ -93,7 +93,7 @@ button_state_t button_check_for_clicktype()
         if (is_long_pressed)
         {
             if (is_button_pressed)
-                return LONGPRESS;
+                return BTN_LONGPRESS;
             else
                 is_long_pressed = false;
         }
@@ -106,9 +106,9 @@ button_state_t button_check_for_clicktype()
             NRF_LOG_INFO("Double click acquired - changing mode");
             LOG_BACKEND_USB_PROCESS();
 #endif
-            return DOUBLECLICK;
+            return BTN_DOUBLECLICK;
         }
     }
 
-    return NOP;
+    return BTN_NOP;
 }

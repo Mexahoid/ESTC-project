@@ -12,7 +12,7 @@ static nrfx_systick_state_t timestamp_pwm_us;
 
 void color_init()
 {
-    mode = OFF;
+    mode = CLR_OFF;
     current.h = COLOR_HUE_DEFAULT;
     current.s = COLOR_SAT_DEFAULT;
     if (current.s > 100)
@@ -39,21 +39,21 @@ void color_increase_mode_value()
 
     switch (mode)
     {
-    case OFF:
+    case CLR_OFF:
         break;
-    case HUE:
+    case CLR_HUE:
         current.h += current_incdec.h;
         if (current.h >= 360)
             current.h = 0;
         break;
-    case SAT:
+    case CLR_SAT:
         current.s += current_incdec.s;
         if (current.s >= 100)
             current_incdec.s = -1;
         if (current.s <  1)
             current_incdec.s = 1;
         break;
-    case BRI:
+    case CLR_BRI:
         current.v += current_incdec.v;
         if (current.v >= 100)
             current_incdec.v = -1;
@@ -65,8 +65,8 @@ void color_increase_mode_value()
 
 void color_change_mode()
 {
-    if (mode == BRI)
-        mode = OFF;
+    if (mode == CLR_BRI)
+        mode = CLR_OFF;
     else
         mode++;
 }

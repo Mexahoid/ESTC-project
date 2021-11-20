@@ -6,10 +6,10 @@
 // Enum that holds LED pin codes.
 typedef enum
 {
-    LED_YELLOW = NRF_GPIO_PIN_MAP(0, 6),
-    LED_RED = NRF_GPIO_PIN_MAP(0, 8),
-    LED_GREEN = NRF_GPIO_PIN_MAP(1, 9),
-    LED_BLUE = NRF_GPIO_PIN_MAP(0, 12),
+    LED1_GREEN = NRF_GPIO_PIN_MAP(0, 6),
+    LED2_RED = NRF_GPIO_PIN_MAP(0, 8),
+    LED2_GREEN = NRF_GPIO_PIN_MAP(1, 9),
+    LED2_BLUE = NRF_GPIO_PIN_MAP(0, 12),
 } led_t;
 
 // Enum that holds LED states.

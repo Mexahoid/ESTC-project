@@ -28,13 +28,13 @@ typedef struct {
 // Color modes.
 typedef enum {
     // No input (LED1 is always off)​.
-    OFF,
+    CLR_OFF,
     // Hue modification (LED1 blinks slowly)​.
-    HUE,
+    CLR_HUE,
     // Saturation modification (LED1 blinks fast)​.
-    SAT,
+    CLR_SAT,
     // Brightness modification (LED1 is always on)​.
-    BRI
+    CLR_BRI
 } color_mode_t;
 
 // Converts HSV model color to PWM model.
