@@ -13,6 +13,7 @@
 // PWM context struct.
 typedef struct
 {
+    int pwm_gpio;
     // Inner counter [0 - PWM_COUNTER_MAX].
     volatile int pwm_counter;
     // PWM duty percentage.
@@ -41,13 +42,13 @@ typedef struct
 
 
 // Modulates GPIO with PWM.
-void pwm_modulate(pwm_ctx_t* context, int gpio);
+void pwm_modulate(pwm_ctx_t* context);
 
 // Looks every PWM ms for a PWM percentage recalc.
 void pwm_percentage_recalc(pwm_ctx_t* context);
 
 // Initializes PWM module.
-void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int on_time, int frequency);
+void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int on_time, int frequency, int gpio);
 
 // Returns true if PWM total delay has passed.
 bool pwm_is_delay_passed(pwm_ctx_t* context);

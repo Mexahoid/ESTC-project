@@ -54,10 +54,6 @@
 #include "log.h"
 #endif
 
-
-#define MAIN_TEST
-
-
 // Delegate for PWM methods.
 void gpio_action(int gpio, int state_on)
 {
@@ -69,31 +65,21 @@ int main(void)
     leds_init();
     color_init();
 
-    pwm_ctx_t pwm_context_led1;
-    pwm_init(&pwm_context_led1, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    pwm_ctx_t pwm_context_led1_green;
+    pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);
 
-#ifndef MAIN_TEST
-    pwm_ctx_t pwm_context_red, pwm_context_green, pwm_context_blue;
-    pwm_init(&pwm_context_red, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
-    pwm_init(&pwm_context_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
-    pwm_init(&pwm_context_blue, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
+    pwm_ctx_t pwm_context_led2_red;
+    pwm_init(&pwm_context_led2_red, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED2_RED);
+    pwm_context_led2_red.pwm_is_recalcable = false;
 
-    pwm_context_red.pwm_is_recalcable = false;
-    pwm_context_green.pwm_is_recalcable = false;
-    pwm_context_blue.pwm_is_recalcable = false;
-#endif
+    pwm_ctx_t pwm_context_led2_green;
+    pwm_init(&pwm_context_led2_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED2_GREEN);
+    pwm_context_led2_green.pwm_is_recalcable = false;
 
-#ifdef MAIN_TEST
-    pwm_ctx_t pwm_contexts[3];
-    led_t leds[] = {LED2_RED, LED2_GREEN, LED2_BLUE};
+    pwm_ctx_t pwm_context_led2_blue;
+    pwm_init(&pwm_context_led2_blue, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED2_BLUE);
+    pwm_context_led2_blue.pwm_is_recalcable = false;
 
-    for (int i = 0; i < ARRAY_SIZE(pwm_contexts); i++)
-    {
-        pwm_init(&(pwm_contexts[i]), gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY);
-        pwm_contexts[i].pwm_is_recalcable = false;
-    }
-
-#endif
     button_interrupt_init();
 
     color_pwm_t color;
@@ -113,56 +99,41 @@ int main(void)
         logs_empty_action();
 #endif
 
-        pwm_modulate(&pwm_context_led1, LED1_GREEN);
+        pwm_modulate(&pwm_context_led1_green);
+        pwm_modulate(&pwm_context_led2_red);
+        pwm_modulate(&pwm_context_led2_green);
+        pwm_modulate(&pwm_context_led2_blue);
 
-        for (int i = 0; i < ARRAY_SIZE(pwm_contexts); i++)
-        {
-            pwm_modulate(&(pwm_contexts[i]), leds[i]);
-        }
-
-#ifndef MAIN_TEST
-        pwm_modulate(&pwm_context_red, LED2_RED);
-        pwm_modulate(&pwm_context_green, LED2_GREEN);
-        pwm_modulate(&pwm_context_blue, LED2_BLUE);
-#endif
         color_mode_t cm = color_get_mode();
         switch (cm)
         {
         case CLR_OFF:
-            pwm_context_led1.delay_total = BLINK_DELAY_MS;
-            pwm_context_led1.pwm_is_recalcable = false;
-            pwm_set_percentage(&pwm_context_led1, 0);
+            pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
+            pwm_context_led1_green.pwm_is_recalcable = false;
+            pwm_set_percentage(&pwm_context_led1_green, 0);
             break;
         case CLR_HUE:
-            pwm_context_led1.delay_total = BLINK_DELAY_MS;
-            pwm_context_led1.pwm_is_recalcable = true;
-            pwm_percentage_recalc(&pwm_context_led1);
+            pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
+            pwm_context_led1_green.pwm_is_recalcable = true;
+            pwm_percentage_recalc(&pwm_context_led1_green);
             break;
         case CLR_SAT:
-            pwm_context_led1.delay_total = BLINK_DELAY_MS / 2;
-            pwm_context_led1.pwm_is_recalcable = true;
-            pwm_percentage_recalc(&pwm_context_led1);
+            pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
+            pwm_context_led1_green.pwm_is_recalcable = true;
+            pwm_percentage_recalc(&pwm_context_led1_green);
             break;
         case CLR_BRI:
-            pwm_context_led1.delay_total = BLINK_DELAY_MS;
-            pwm_context_led1.pwm_is_recalcable = false;
-            pwm_set_percentage(&pwm_context_led1, 100);
+            pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
+            pwm_context_led1_green.pwm_is_recalcable = false;
+            pwm_set_percentage(&pwm_context_led1_green, 100);
             break;
         }
 
         button_state_t button_state = button_check_for_clicktype();
 
-#ifndef MAIN_TEST
-        pwm_set_percentage(&pwm_context_red, color.r);
-        pwm_set_percentage(&pwm_context_green, color.g);
-        pwm_set_percentage(&pwm_context_blue, color.b);
-#endif
-
-#ifdef MAIN_TEST
-        pwm_set_percentage(&(pwm_contexts[0]), color.r);
-        pwm_set_percentage(&(pwm_contexts[1]), color.g);
-        pwm_set_percentage(&(pwm_contexts[2]), color.b);
-#endif
+        pwm_set_percentage(&pwm_context_led2_red, color.r);
+        pwm_set_percentage(&pwm_context_led2_green, color.g);
+        pwm_set_percentage(&pwm_context_led2_blue, color.b);
 
         if (button_state == BTN_LONGPRESS && cm != CLR_OFF)
         {
