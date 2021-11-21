@@ -28,11 +28,11 @@ typedef enum
 typedef enum
 {
     // When the button is not touched.
-    BTN_NOP = 0,
+    BUTTON_STATE_NOP = 0,
     // When the button was doubleclicked.
-    BTN_DOUBLECLICK = 1,
+    BUTTON_STATE_DOUBLECLICK = 1,
     // When the button is long pressed.
-    BTN_LONGPRESS = 2
+    BUTTON_STATE_LONGPRESS = 2
 } button_state_t;
 
 

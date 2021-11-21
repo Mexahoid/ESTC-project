@@ -111,22 +111,22 @@ int main(void)
         color_mode_t cm = color_get_mode();
         switch (cm)
         {
-        case CLR_OFF:
+        case COLOR_MODE_OFF:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
             pwm_context_led1_green.pwm_is_recalcable = false;
             pwm_set_percentage(&pwm_context_led1_green, 0);
             break;
-        case CLR_HUE:
+        case COLOR_MODE_HUE:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
             pwm_context_led1_green.pwm_is_recalcable = true;
             pwm_percentage_recalc(&pwm_context_led1_green);
             break;
-        case CLR_SAT:
+        case COLOR_MODE_SAT:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
             pwm_context_led1_green.pwm_is_recalcable = true;
             pwm_percentage_recalc(&pwm_context_led1_green);
             break;
-        case CLR_BRI:
+        case COLOR_MODE_BRI:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
             pwm_context_led1_green.pwm_is_recalcable = false;
             pwm_set_percentage(&pwm_context_led1_green, 100);
@@ -136,7 +136,7 @@ int main(void)
         button_state_t button_state = button_check_for_clicktype();
 
 
-        if (button_state == BTN_LONGPRESS && cm != CLR_OFF)
+        if (button_state == BUTTON_STATE_LONGPRESS && cm != COLOR_MODE_OFF)
         {
             color_increase_mode_value();
             color_get_current_pwm_percentages(&color);
@@ -153,7 +153,7 @@ int main(void)
 #endif
         }
 
-        if (button_state == BTN_DOUBLECLICK)
+        if (button_state == BUTTON_STATE_DOUBLECLICK)
         {
             color_change_mode();
 #ifdef MAIN_LOG
