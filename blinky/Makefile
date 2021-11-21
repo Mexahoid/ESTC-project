@@ -69,6 +69,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/pwm/pwm.c \
   $(PROJ_DIR)/modules/log/log.c \
   $(PROJ_DIR)/modules/color/color.c \
+  $(PROJ_DIR)/modules/helpers/helpers.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -79,6 +80,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/modules/pwm \
   $(PROJ_DIR)/modules/log \
   $(PROJ_DIR)/modules/color \
+  $(PROJ_DIR)/modules/helpers \
   $(SDK_ROOT)/components/libraries/fifo \
   $(SDK_ROOT)/components/libraries/pwm \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \

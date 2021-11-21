@@ -99,6 +99,10 @@ int main(void)
         logs_empty_action();
 #endif
 
+        pwm_set_percentage(&pwm_context_led2_red, color.r);
+        pwm_set_percentage(&pwm_context_led2_green, color.g);
+        pwm_set_percentage(&pwm_context_led2_blue, color.b);
+
         pwm_modulate(&pwm_context_led1_green);
         pwm_modulate(&pwm_context_led2_red);
         pwm_modulate(&pwm_context_led2_green);
@@ -131,9 +135,6 @@ int main(void)
 
         button_state_t button_state = button_check_for_clicktype();
 
-        pwm_set_percentage(&pwm_context_led2_red, color.r);
-        pwm_set_percentage(&pwm_context_led2_green, color.g);
-        pwm_set_percentage(&pwm_context_led2_blue, color.b);
 
         if (button_state == BTN_LONGPRESS && cm != CLR_OFF)
         {

@@ -1,4 +1,5 @@
 #include "color.h"
+#include "helpers.h"
 #include <math.h>
 
 // Current color mode.
@@ -14,16 +15,8 @@ void color_init()
 {
     mode = CLR_OFF;
     current.h = COLOR_HUE_DEFAULT;
-    current.s = COLOR_SAT_DEFAULT;
-    if (current.s > 100)
-        current.s = 100;
-    if (current.s < 0)
-        current.s = 0;
-    current.v = COLOR_BRI_DEFAULT;
-    if (current.v > 100)
-        current.v = 100;
-    if (current.v < 0)
-        current.v = 0;
+    current.s = helper_clamp(COLOR_SAT_DEFAULT, 0, 100);
+    current.v = helper_clamp(COLOR_BRI_DEFAULT, 0, 100);
 
     current.h = current.h % 360;
     current_incdec.h = 1;
@@ -47,14 +40,10 @@ void color_increase_mode_value()
             current.h = 0;
         break;
     case CLR_SAT:
-        current.s += current_incdec.s;
-        if (current.s >= 100 || current.s <  1)
-            current_incdec.s *= -1;
+        helper_increment_circular(&(current.s), &(current_incdec.s), 0, 100);
         break;
     case CLR_BRI:
-        current.v += current_incdec.v;
-        if (current.v >= 100 || current.v < 1)
-            current_incdec.v *= -1;
+        helper_increment_circular(&(current.v), &(current_incdec.v), 0, 100);
         break;
     }
 }
