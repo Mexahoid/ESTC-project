@@ -69,16 +69,13 @@ int main(void)
     pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);
 
     pwm_ctx_t pwm_context_led2_red;
-    pwm_init(&pwm_context_led2_red, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED2_RED);
-    pwm_context_led2_red.pwm_is_recalcable = false;
+    pwm_init(&pwm_context_led2_red, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_RED);
 
     pwm_ctx_t pwm_context_led2_green;
-    pwm_init(&pwm_context_led2_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED2_GREEN);
-    pwm_context_led2_green.pwm_is_recalcable = false;
+    pwm_init(&pwm_context_led2_green, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_GREEN);
 
     pwm_ctx_t pwm_context_led2_blue;
-    pwm_init(&pwm_context_led2_blue, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED2_BLUE);
-    pwm_context_led2_blue.pwm_is_recalcable = false;
+    pwm_init(&pwm_context_led2_blue, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_BLUE);
 
     button_interrupt_init();
 
@@ -112,23 +109,19 @@ int main(void)
         switch (cm)
         {
         case COLOR_MODE_OFF:
-            pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
-            pwm_context_led1_green.pwm_is_recalcable = false;
+            pwm_context_led1_green.delay_total = 0;
             pwm_set_percentage(&pwm_context_led1_green, 0);
             break;
         case COLOR_MODE_HUE:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
-            pwm_context_led1_green.pwm_is_recalcable = true;
             pwm_percentage_recalc(&pwm_context_led1_green);
             break;
         case COLOR_MODE_SAT:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
-            pwm_context_led1_green.pwm_is_recalcable = true;
             pwm_percentage_recalc(&pwm_context_led1_green);
             break;
         case COLOR_MODE_BRI:
-            pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
-            pwm_context_led1_green.pwm_is_recalcable = false;
+            pwm_context_led1_green.delay_total = 0;
             pwm_set_percentage(&pwm_context_led1_green, 100);
             break;
         }

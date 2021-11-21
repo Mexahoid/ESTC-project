@@ -36,8 +36,6 @@ typedef struct
     nrfx_systick_state_t pwm_timestamp_us;
     // ms timestamp for tick updates.
     nrfx_systick_state_t pwm_timestamp_ms;
-    // Is current context GPIO automatically recalcable.
-    bool pwm_is_recalcable;
 } pwm_ctx_t;
 
 
@@ -49,9 +47,6 @@ void pwm_percentage_recalc(pwm_ctx_t* context);
 
 // Initializes PWM module.
 void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int on_time, int frequency, int gpio);
-
-// Returns true if PWM total delay has passed.
-bool pwm_is_delay_passed(pwm_ctx_t* context);
 
 // Sets PWM percentage.
 void pwm_set_percentage(pwm_ctx_t* context, int percentage);

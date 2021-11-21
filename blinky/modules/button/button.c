@@ -24,7 +24,7 @@ static void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
     is_button_pressed = !is_button_pressed;
 
     // Chatter mitigation
-    if (!nrfx_systick_test(&button_timestamp, 5000))
+    if (!nrfx_systick_test(&button_timestamp, BUTTON_CHATTER_DELAY_US))
         return;
     nrfx_systick_get(&button_timestamp);
     clicks++;
