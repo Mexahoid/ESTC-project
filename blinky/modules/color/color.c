@@ -50,8 +50,8 @@ void color_increase_mode_value()
 
 void color_change_mode()
 {
-    if (mode == CLR_BRI)
-        mode = CLR_OFF;
+    if (mode == CLR_LAST)
+        mode = CLR_FIRST;
     else
         mode++;
 }
