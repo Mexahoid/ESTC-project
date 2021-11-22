@@ -114,20 +114,18 @@ int main(void)
             break;
         case COLOR_MODE_HUE:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
-            pwm_percentage_recalc(&pwm_context_led1_green);
             break;
         case COLOR_MODE_SAT:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
-            pwm_percentage_recalc(&pwm_context_led1_green);
             break;
         case COLOR_MODE_BRI:
             pwm_context_led1_green.delay_total = 0;
             pwm_set_percentage(&pwm_context_led1_green, 100);
             break;
         }
+        pwm_percentage_recalc(&pwm_context_led1_green);
 
         button_state_t button_state = button_check_for_clicktype();
-
 
         if (button_state == BUTTON_STATE_LONGPRESS && cm != COLOR_MODE_OFF)
         {

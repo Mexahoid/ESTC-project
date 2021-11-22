@@ -20,6 +20,9 @@
 // Delay for chatter mitigation.
 #define BUTTON_CHATTER_DELAY_US 5000
 
+// Delay with us in ms.
+#define BUTTON_DELAY_US_IN_MS 1000
+
 // Struct holding buttons pins.
 typedef enum
 {

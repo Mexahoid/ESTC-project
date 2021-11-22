@@ -6,8 +6,6 @@ static volatile bool is_button_pressed = false;
 static nrfx_systick_state_t timestamp;
 // Button clicks counter.
 static volatile int clicks = 0;
-// us counter.
-static volatile int counter_us = 0;
 // ms counter.
 static volatile int counter_ms = 0;
 // Is button long pressed.
@@ -50,16 +48,10 @@ void button_interrupt_init()
 
 button_state_t button_check_for_clicktype()
 {
-    if (nrfx_systick_test(&timestamp, 10))
-    {
-        counter_us += 10;
-        if (counter_us >= 1000)
-        {
-            counter_ms++;
-            counter_us = 0;
-        }
-        nrfx_systick_get(&timestamp);
-    }
+    if (!nrfx_systick_test(&timestamp, BUTTON_DELAY_US_IN_MS))
+        return BUTTON_STATE_NOP;
+    counter_ms++;
+    nrfx_systick_get(&timestamp);
 
     bool delay_passed = counter_ms >= BUTTON_DOUBLECLICK_DELAY_MS;
 
