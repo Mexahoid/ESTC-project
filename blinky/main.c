@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include "boards.h"
 #include "nordic_common.h"
+#include "nrf_nvmc.h"
 
 #include "pwm.h"
 // Frequency of PWM in kHz.
@@ -65,12 +66,12 @@ void gpio_action(int gpio, int state_on)
 int main(void)
 {
     leds_init();
-    rom_3bytes_t data;
-    rom_load_3bytes(&data);
+    rom_word_t data;
+    rom_load_word(&data);
     color_rgb_t saved_rgb;
-    saved_rgb.r = data.first;
-    saved_rgb.g = data.second;
-    saved_rgb.b = data.third;
+    saved_rgb.r = data.first_byte;
+    saved_rgb.g = data.second_byte;
+    saved_rgb.b = data.third_byte;
     color_init(&saved_rgb);
 
     pwm_ctx_t pwm_context_led1_green;
@@ -125,10 +126,10 @@ int main(void)
             if (!is_saved)
             {
                 color_get_current_rgb(&saved_rgb);
-                data.first = (unsigned char)(saved_rgb.r);
-                data.second = (unsigned char)(saved_rgb.g);
-                data.third = (unsigned char)(saved_rgb.b);
-                rom_save_3bytes(&data);
+                data.first_byte = (unsigned char)(saved_rgb.r);
+                data.second_byte = (unsigned char)(saved_rgb.g);
+                data.third_byte = (unsigned char)(saved_rgb.b);
+                rom_save_word(&data);
                 is_saved = true;
             }
 
