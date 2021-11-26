@@ -20,6 +20,13 @@ typedef struct {
     int b;
 } color_pwm_t;
 
+// RGB color 255-255-255.
+typedef struct {
+    int r;
+    int g;
+    int b;
+} color_rgb_t;
+
 // Color modes.
 typedef enum {
     // No input (LED1 is always off)​.
@@ -46,7 +53,10 @@ void color_increase_mode_value();
 // Returns current color mode.
 color_mode_t color_get_mode();
 
+// Returns current RGB model color.
+void color_get_current_rgb(color_rgb_t *color);
+
 // Initializes color module.
-void color_init();
+void color_init(color_rgb_t *state);
 
 #endif

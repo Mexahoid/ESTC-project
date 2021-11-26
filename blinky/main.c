@@ -65,7 +65,13 @@ void gpio_action(int gpio, int state_on)
 int main(void)
 {
     leds_init();
-    color_init(0, 100, 100);
+    rom_3bytes_t data;
+    rom_load_3bytes(&data);
+    color_rgb_t saved_rgb;
+    saved_rgb.r = data.first;
+    saved_rgb.g = data.second;
+    saved_rgb.b = data.third;
+    color_init(&saved_rgb);
 
     pwm_ctx_t pwm_context_led1_green;
     pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);
@@ -83,6 +89,8 @@ int main(void)
 
     color_pwm_t color;
     color_get_current_pwm_percentages(&color);
+
+    bool is_saved = true;
 
 #ifdef MAIN_LOG
     logs_init();
@@ -113,6 +121,17 @@ int main(void)
         case COLOR_MODE_OFF:
             pwm_context_led1_green.delay_total = 0;
             pwm_set_percentage(&pwm_context_led1_green, 0);
+
+            if (!is_saved)
+            {
+                color_get_current_rgb(&saved_rgb);
+                data.first = (unsigned char)(saved_rgb.r);
+                data.second = (unsigned char)(saved_rgb.g);
+                data.third = (unsigned char)(saved_rgb.b);
+                rom_save_3bytes(&data);
+                is_saved = true;
+            }
+
             break;
         case COLOR_MODE_HUE:
             pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
@@ -133,6 +152,9 @@ int main(void)
         {
             color_increase_mode_value();
             color_get_current_pwm_percentages(&color);
+            if (is_saved)
+                is_saved = false;
+
 
 #ifdef MAIN_LOG
             if (color_old.r != color.r || color_old.g != color.g || color_old.b != color.b)
