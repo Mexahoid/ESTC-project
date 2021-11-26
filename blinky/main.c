@@ -63,7 +63,7 @@ void gpio_action(int gpio, int state_on)
 int main(void)
 {
     leds_init();
-    color_init();
+    color_init(0, 100, 100);
 
     pwm_ctx_t pwm_context_led1_green;
     pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);

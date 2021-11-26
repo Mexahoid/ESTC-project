@@ -11,12 +11,12 @@ static color_hsv_t current_incdec;
 // Timestamp for smooth changing.
 static nrfx_systick_state_t timestamp_pwm_us;
 
-void color_init()
+void color_init(int hue, int sat, int bri)
 {
     mode = COLOR_MODE_OFF;
-    current.h = COLOR_HUE_DEFAULT;
-    current.s = helper_clamp(COLOR_SAT_DEFAULT, 0, 100);
-    current.v = helper_clamp(COLOR_BRI_DEFAULT, 0, 100);
+    current.h = hue;
+    current.s = helper_clamp(sat, 0, 100);
+    current.v = helper_clamp(bri, 0, 100);
 
     current.h = current.h % 360;
     current_incdec.h = 1;
