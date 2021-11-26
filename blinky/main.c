@@ -44,6 +44,8 @@
 #include "button.h"
 #include "color.h"
 
+#include "rom.h"
+
 // Enables logging in main.
 // #define MAIN_LOG
 #ifdef MAIN_LOG
