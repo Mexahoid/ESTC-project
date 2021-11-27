@@ -6,6 +6,10 @@
 // Delay between incdec calls (in us).
 #define COLOR_DELAY_US 45000
 
+#define COLOR_DEFAULT_HUE 0
+#define COLOR_DEFAULT_SAT 100
+#define COLOR_DEFAULT_BRI 100
+
 // HSV color 360-100-100.
 typedef struct {
     int h;

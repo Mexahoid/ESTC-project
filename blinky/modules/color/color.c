@@ -11,7 +11,6 @@ static color_hsv_t current_incdec;
 // Timestamp for smooth changing.
 static nrfx_systick_state_t timestamp_pwm_us;
 
-
 // Converts RGB model to HSV model.
 void convert_rgb_hsv(color_rgb_t *rgb, color_hsv_t *hsv)
 {
@@ -20,20 +19,16 @@ void convert_rgb_hsv(color_rgb_t *rgb, color_hsv_t *hsv)
     int b = rgb->b * 100 / 255;
 
     int max_p =
-    (r >= g && r >= b) ? r : (
-        (g >= r && g >= b) ? g : b
-    );
+        (r >= g && r >= b) ? r : ((g >= r && g >= b) ? g : b);
     int min_p =
-    (r <= g && r <= b) ? r : (
-        (g <= r && g <= b) ? g : b
-    );
+        (r <= g && r <= b) ? r : ((g <= r && g <= b) ? g : b);
 
     hsv->v = max_p;
 
     if (max_p == 0)
         hsv->s = 0;
     else
-        hsv->s = 100 - (min_p * 100 / max_p);  //Because it's not doubles.
+        hsv->s = 100 - (min_p * 100 / max_p); //Because it's not doubles.
 
     // Unknown
     if (max_p == min_p)
@@ -138,16 +133,22 @@ void convert_hsv_rgb(color_hsv_t *hsv, color_rgb_t *rgb)
     convert_pwm_rgb(&pwm, rgb);
 }
 
-
 void color_init(color_rgb_t *state)
 {
     mode = COLOR_MODE_OFF;
-
-    state->r = helper_clamp(state->r, 0, 255);
-    state->g = helper_clamp(state->g, 0, 255);
-    state->b = helper_clamp(state->b, 0, 255);
-
-    convert_rgb_hsv(state, &current);
+    if (state != 0)
+    {
+        state->r = helper_clamp(state->r, 0, 255);
+        state->g = helper_clamp(state->g, 0, 255);
+        state->b = helper_clamp(state->b, 0, 255);
+        convert_rgb_hsv(state, &current);
+    }
+    else
+    {
+        current.h = helper_clamp(COLOR_DEFAULT_HUE, 0, 360);
+        current.s = helper_clamp(COLOR_DEFAULT_SAT, 0, 100);
+        current.v = helper_clamp(COLOR_DEFAULT_BRI, 0, 100);
+    }
     current_incdec.h = 1;
     current_incdec.s = current.s >= 100 ? -1 : 1;
     current_incdec.v = current.v >= 100 ? -1 : 1;

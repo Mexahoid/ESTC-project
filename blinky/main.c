@@ -86,9 +86,7 @@ int main(void)
         rom_flag = false;
 #endif
 
-        saved_rgb.r = 255;
-        saved_rgb.g = 0;
-        saved_rgb.b = 0;
+        color_init(0);
     }
     else
     {
@@ -101,9 +99,9 @@ int main(void)
         saved_rgb.r = data.first_byte;
         saved_rgb.g = data.second_byte;
         saved_rgb.b = data.third_byte;
+        color_init(&saved_rgb);
     }
 
-    color_init(&saved_rgb);
     color_pwm_t color;
     color_get_current_pwm_percentages(&color);
 
