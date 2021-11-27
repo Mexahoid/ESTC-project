@@ -148,12 +148,6 @@ void color_init(color_rgb_t *state)
     state->b = helper_clamp(state->b, 0, 255);
 
     convert_rgb_hsv(state, &current);
-
-    //current.h = hue;
-    //current.s = helper_clamp(sat, 0, 100);
-    //current.v = helper_clamp(bri, 0, 100);
-
-    //current.h = 360;
     current_incdec.h = 1;
     current_incdec.s = current.s >= 100 ? -1 : 1;
     current_incdec.v = current.v >= 100 ? -1 : 1;

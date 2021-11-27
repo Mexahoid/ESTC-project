@@ -32,7 +32,6 @@
 #include <stdint.h>
 #include "boards.h"
 #include "nordic_common.h"
-#include "nrf_nvmc.h"
 
 #include "pwm.h"
 // Frequency of PWM in kHz.
@@ -55,6 +54,7 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 #include "log.h"
+#include "nrf_delay.h"
 #endif
 
 // Delegate for PWM methods.
@@ -66,16 +66,46 @@ void gpio_action(int gpio, int state_on)
 int main(void)
 {
     leds_init();
-    rom_word_t data;
-    rom_load_word(&data);
     color_rgb_t saved_rgb;
-    saved_rgb.r = data.first_byte;
-    saved_rgb.g = data.second_byte;
-    saved_rgb.b = data.third_byte;
-    color_init(&saved_rgb);
+    rom_word_t data;
 
-    pwm_ctx_t pwm_context_led1_green;
-    pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);
+#ifdef MAIN_LOG
+    logs_init();
+    NRF_LOG_INFO("Init led init");
+    NRF_LOG_PROCESS();
+    //nrf_delay_ms(3000);
+    bool rom_flag = false;
+    int addr = -1;
+#endif
+
+    if (!rom_init())
+    {
+#ifdef MAIN_LOG
+        NRF_LOG_INFO("Not found data, init");
+        NRF_LOG_PROCESS();
+        rom_flag = false;
+#endif
+
+        saved_rgb.r = 255;
+        saved_rgb.g = 0;
+        saved_rgb.b = 0;
+    }
+    else
+    {
+        rom_load_word(&data);
+#ifdef MAIN_LOG
+        rom_flag = true;
+        NRF_LOG_INFO("R: %d, G: %d, B: %d", data.first_byte, data.second_byte, data.third_byte);
+        NRF_LOG_PROCESS();
+#endif
+        saved_rgb.r = data.first_byte;
+        saved_rgb.g = data.second_byte;
+        saved_rgb.b = data.third_byte;
+    }
+
+    color_init(&saved_rgb);
+    color_pwm_t color;
+    color_get_current_pwm_percentages(&color);
 
     pwm_ctx_t pwm_context_led2_red;
     pwm_init(&pwm_context_led2_red, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_RED);
@@ -86,27 +116,31 @@ int main(void)
     pwm_ctx_t pwm_context_led2_blue;
     pwm_init(&pwm_context_led2_blue, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_BLUE);
 
-    button_interrupt_init();
+    pwm_ctx_t pwm_context_led1_green;
+    pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);
 
-    color_pwm_t color;
-    color_get_current_pwm_percentages(&color);
+    button_interrupt_init();
 
     bool is_saved = true;
 
 #ifdef MAIN_LOG
-    logs_init();
     color_pwm_t color_old;
     color_old.r = color.r;
     color_old.g = color.g;
     color_old.b = color.b;
 #endif
 
+    char sflag = 0;
+
     while (true)
     {
 #ifdef MAIN_LOG
         logs_empty_action();
 #endif
-
+#ifdef MAIN_LOG
+        NRF_LOG_INFO("R: %d, G: %d, B: %d, rom_flag: %d, addr: %d", color.r, color.g, color.b, rom_flag, addr);
+        NRF_LOG_PROCESS();
+#endif
         pwm_set_percentage(&pwm_context_led2_red, color.r);
         pwm_set_percentage(&pwm_context_led2_green, color.g);
         pwm_set_percentage(&pwm_context_led2_blue, color.b);
@@ -115,13 +149,17 @@ int main(void)
         pwm_modulate(&pwm_context_led2_red);
         pwm_modulate(&pwm_context_led2_green);
         pwm_modulate(&pwm_context_led2_blue);
-
         color_mode_t cm = color_get_mode();
+        //continue;
         switch (cm)
         {
         case COLOR_MODE_OFF:
-            pwm_context_led1_green.delay_total = 0;
-            pwm_set_percentage(&pwm_context_led1_green, 0);
+            if ((sflag & 0b0001) == 0)
+            {
+                pwm_context_led1_green.delay_total = 0;
+                pwm_set_percentage(&pwm_context_led1_green, 0);
+                sflag &= 0b0001;
+            }
 
             if (!is_saved)
             {
@@ -129,20 +167,36 @@ int main(void)
                 data.first_byte = (unsigned char)(saved_rgb.r);
                 data.second_byte = (unsigned char)(saved_rgb.g);
                 data.third_byte = (unsigned char)(saved_rgb.b);
-                rom_save_word(&data);
                 is_saved = true;
+#ifdef MAIN_LOG
+                NRF_LOG_INFO("Saving: R: %d, G: %d, B: %d, is_saved: %d", data.first_byte, data.second_byte, data.third_byte, is_saved);
+                NRF_LOG_PROCESS();
+#endif
+                rom_save_word(&data);
             }
 
             break;
         case COLOR_MODE_HUE:
-            pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
+            if ((sflag & 0b0010) == 0)
+            {
+                pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
+                sflag &= 0b0010;
+            }
             break;
         case COLOR_MODE_SAT:
-            pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
+            if ((sflag & 0b0100) == 0)
+            {
+                pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
+                sflag &= 0b0100;
+            }
             break;
         case COLOR_MODE_BRI:
-            pwm_context_led1_green.delay_total = 0;
-            pwm_set_percentage(&pwm_context_led1_green, 100);
+            if ((sflag & 0b1000) == 0)
+            {
+                pwm_context_led1_green.delay_total = 0;
+                pwm_set_percentage(&pwm_context_led1_green, 100);
+                sflag &= 0b1000;
+            }
             break;
         }
         pwm_percentage_recalc(&pwm_context_led1_green);
@@ -156,12 +210,11 @@ int main(void)
             if (is_saved)
                 is_saved = false;
 
-
 #ifdef MAIN_LOG
             if (color_old.r != color.r || color_old.g != color.g || color_old.b != color.b)
             {
-                NRF_LOG_INFO("R: %d, G: %d, B: %d", color.r, color.g, color.b);
-                LOG_BACKEND_USB_PROCESS();
+                NRF_LOG_INFO("R: %d, G: %d, B: %d, is_saved: %d", color.r, color.g, color.b, is_saved);
+                NRF_LOG_PROCESS();
                 color_old.r = color.r;
                 color_old.g = color.g;
                 color_old.b = color.b;
@@ -174,7 +227,7 @@ int main(void)
             color_change_mode();
 #ifdef MAIN_LOG
             NRF_LOG_INFO("Color mode changed: %d", color_get_mode());
-            LOG_BACKEND_USB_PROCESS();
+            NRF_LOG_PROCESS();
 #endif
         }
     }

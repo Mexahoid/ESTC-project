@@ -1,5 +1,9 @@
 #include "rom.h"
 
+// Current address in a memory.
+static int curr_addr;
+
+// Returns parity bit of a 32bit word.
 int count_bits_word(int word)
 {
     int res = 0;
@@ -8,61 +12,51 @@ int count_bits_word(int word)
     return res % 2;
 }
 
-int prepare_word(char a, char b, char c)
+// Makes Hamming code for a word.
+int prepare_word(int a, int b, int c)
 {
     int res = 0;
     // first 3 bits are 000
     //r0 r1
     res <<= 1; // x0
-    res += a & 0b10000000 >> 7;
+    res += (a & 0b10000000) >> 7;
     res <<= 1; // r2
     res <<= 3; // x1 x2 x3
-    res += a & 0b01110000 >> 4;
-    res <<= 1; //r2
-    res <<= 4; // x4 x5 x6 x7
+    res += (a & 0b01110000) >> 4;
+    res <<= 1;             //r2
+    res <<= 4;             // x4 x5 x6 x7
     res += a & 0b00001111; // a ready
-    res <<= 3; // x8 x9 x10
-    res += b & 0b11100000 >> 5;
-    res <<= 1; //r3
-    res <<= 5; // x11 - x15
+    res <<= 3;             // x8 x9 x10
+    res += (b & 0b11100000) >> 5;
+    res <<= 1;             //r3
+    res <<= 5;             // x11 - x15
     res += b & 0b00011111; //b ready
-    res <<= 8; // x16 - x23
+    res <<= 8;             // x16 - x23
     res += c;
 
-    int r0, r1, r2, r3, r4;
-
-    r0 = res & R0_MASK;
-    res |= count_bits_word(r0) << 28;
-
-    r1 = res & R1_MASK;
-    res |= count_bits_word(r1) << 27;
-
-    r2 = res & R2_MASK;
-    res |= count_bits_word(r2) << 25;
-
-    r3 = res & R3_MASK;
-    res |= count_bits_word(r3) << 21;
-
-    r4 = res & R4_MASK;
-    res |= count_bits_word(r4) << 13;
-
+    res |= count_bits_word(res & ROM_R0_MASK) << 28;
+    res |= count_bits_word(res & ROM_R1_MASK) << 27;
+    res |= count_bits_word(res & ROM_R2_MASK) << 25;
+    res |= count_bits_word(res & ROM_R3_MASK) << 21;
+    res |= count_bits_word(res & ROM_R4_MASK) << 13;
 
     return res;
 }
 
-
+// Checks if there any bit errors in a word.
 int check_word(int word)
 {
     int err = 0;
-    err |= count_bits_word(word & R0_MASK);
-    err |= count_bits_word(word & R1_MASK) << 1;
-    err |= count_bits_word(word & R2_MASK) << 2;
-    err |= count_bits_word(word & R3_MASK) << 3;
-    err |= count_bits_word(word & R4_MASK) << 4;
+    err |= count_bits_word(word & ROM_R0_MASK);
+    err |= count_bits_word(word & ROM_R1_MASK) << 1;
+    err |= count_bits_word(word & ROM_R2_MASK) << 2;
+    err |= count_bits_word(word & ROM_R3_MASK) << 3;
+    err |= count_bits_word(word & ROM_R4_MASK) << 4;
 
     return err;
 }
 
+// Fixes 1 error in a word.
 void fix_word(int *word, int err)
 {
     if (err == 0)
@@ -78,18 +72,146 @@ void fix_word(int *word, int err)
         mask = x >> err;
         *word &= mask;
     }
+}
 
+// Reads word from ROM.
+int get_word(int addr)
+{
+    int *ptr = (int *)addr;
+    int value = *ptr;
+
+    return value;
+}
+
+// Writes word to ROM.
+void set_word(int word)
+{
+    nrf_nvmc_write_word((uint32_t)curr_addr, word);
+}
+
+// Parses word from Hamming code.
+void parse_word(int word, rom_word_t *data)
+{
+    int x = word;
+
+    int b = x & 0b11111111;
+    x = x >> 8;
+
+    int g = x & 0b00011111;
+    x >>= 5;
+    x >>= 1;
+    g += (x & 0b111) << 5;
+    x >>= 3;
+
+    int r = x & 0b1111;
+    x >>= 4;
+    x >>= 1;
+    r += (x & 0b111) << 4;
+    x >>= 1;
+    r += (x & 0b1) << 7;
+
+    data->first_byte = r;
+    data->second_byte = g;
+    data->third_byte = b;
+}
+
+// Checks if it is data record or a 111..... record.
+bool is_word_null(int word)
+{
+    return (word & 0b11100000000000000000000000000000) != 0;
+}
+
+// Clears page.
+void erase_page(int addr)
+{
+    nrf_nvmc_page_erase(addr);
+}
+
+// Finds 111... record on a page.
+int find_on_page(int start_addr, int stop_addr)
+{
+    int word;
+    int counter = 0;
+
+    for (int paddr = start_addr; paddr < stop_addr; paddr += ROM_ADDR_STEP)
+    {
+        word = get_word(paddr);
+        if (is_word_null(word))
+            return paddr;
+        counter++; // It doesn't work without it.
+    }
+    return stop_addr;
+}
+
+bool rom_init()
+{
+    // Start from first page
+    /*
+    erase_page(ROM_PAGE1_MIN_ADDR);
+    erase_page(ROM_PAGE2_MIN_ADDR);
+    return false;
+    */
+    curr_addr = ROM_PAGE1_MIN_ADDR;
+    // There never should be more records than a ROM_WORD_COUNT_PAGE
+    int a1 = find_on_page(ROM_PAGE1_MIN_ADDR, ROM_PAGE1_MAX_ADDR);
+    int a2 = find_on_page(ROM_PAGE2_MIN_ADDR, ROM_PAGE2_MAX_ADDR);
+
+    if (a1 == ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MIN_ADDR)
+    {
+        curr_addr = ROM_PAGE1_MIN_ADDR;
+        return false;
+    }
+
+    // When only one page is full
+    if (a1 == ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MAX_ADDR)
+    {
+        curr_addr = ROM_PAGE1_MIN_ADDR;
+        return true;
+    }
+    if (a2 == ROM_PAGE2_MIN_ADDR && a1 == ROM_PAGE1_MAX_ADDR)
+    {
+        curr_addr = ROM_PAGE2_MIN_ADDR;
+        return true;
+    }
+
+    // When there are some records on a page
+    if (a1 != ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MIN_ADDR)
+    {
+        curr_addr = a1;
+        return true;
+    }
+
+    if (a2 != ROM_PAGE2_MIN_ADDR && a1 == ROM_PAGE1_MIN_ADDR)
+    {
+        curr_addr = a2;
+        return true;
+    }
+    return false;
 }
 
 void rom_save_word(rom_word_t *data)
 {
+    int word = prepare_word(data->first_byte, data->second_byte, data->third_byte);
+    if (curr_addr == ROM_PAGE1_MAX_ADDR)
+    {
+        erase_page(ROM_PAGE2_MIN_ADDR);
+        curr_addr = ROM_PAGE2_MIN_ADDR; //irrelevant but still
+    }
 
+    if (curr_addr == ROM_PAGE2_MAX_ADDR)
+    {
+        erase_page(ROM_PAGE1_MIN_ADDR);
+        curr_addr = ROM_PAGE1_MIN_ADDR;
+    }
+
+    set_word(word);
+    curr_addr += ROM_ADDR_STEP;
 }
 
 void rom_load_word(rom_word_t *data)
 {
-    data->mark_byte = 0;
-    data->first_byte = 255;
-    data->second_byte = 0;
-    data->third_byte = 0;
+    int addr = curr_addr == ROM_PAGE1_MIN_ADDR ? ROM_PAGE2_MAX_ADDR : curr_addr;
+    addr -= ROM_ADDR_STEP;
+    int word = get_word(addr);
+    parse_word(word, data);
 }
