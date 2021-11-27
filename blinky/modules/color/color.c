@@ -42,29 +42,27 @@ void convert_rgb_hsv(color_rgb_t *rgb, color_hsv_t *hsv)
         return;
     }
 
-    int h_frac = 60 * (g - b) / (max_p - min_p);
-
     if (max_p == r && g >= b)
     {
-        hsv->h = h_frac;
+        hsv->h = 60 * (g - b) / (max_p - min_p);
         return;
     }
 
     if (max_p == r && g < b)
     {
-        hsv->h = h_frac + 360;
+        hsv->h = 60 * (g - b) / (max_p - min_p) + 360;
         return;
     }
 
     if (max_p == g)
     {
-        hsv->h = h_frac + 120;
+        hsv->h = 60 * (b - r) / (max_p - min_p) + 120;
         return;
     }
 
     if (max_p == b)
     {
-        hsv->h = h_frac + 240;
+        hsv->h = 60 * (r - g) / (max_p - min_p) + 240;
         return;
     }
 }
@@ -155,7 +153,7 @@ void color_init(color_rgb_t *state)
     //current.s = helper_clamp(sat, 0, 100);
     //current.v = helper_clamp(bri, 0, 100);
 
-    current.h = current.h % 360;
+    //current.h = 360;
     current_incdec.h = 1;
     current_incdec.s = current.s >= 100 ? -1 : 1;
     current_incdec.v = current.v >= 100 ? -1 : 1;
