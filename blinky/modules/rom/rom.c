@@ -145,21 +145,41 @@ int find_on_page(int start_addr, int stop_addr)
 
 bool rom_init()
 {
-    // Start from first page
     /*
     erase_page(ROM_PAGE1_MIN_ADDR);
     erase_page(ROM_PAGE2_MIN_ADDR);
     return false;
     */
+
+    // Start from first page
     curr_addr = ROM_PAGE1_MIN_ADDR;
-    // There never should be more records than a ROM_WORD_COUNT_PAGE
     int a1 = find_on_page(ROM_PAGE1_MIN_ADDR, ROM_PAGE1_MAX_ADDR);
     int a2 = find_on_page(ROM_PAGE2_MIN_ADDR, ROM_PAGE2_MAX_ADDR);
 
+    // When both pages are clean
     if (a1 == ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MIN_ADDR)
     {
         curr_addr = ROM_PAGE1_MIN_ADDR;
+        return 0;
+    }
+
+    // When both pages are full, for now no way of identifying what record is last
+    if (a1 == ROM_PAGE1_MAX_ADDR && a2 == ROM_PAGE2_MAX_ADDR)
+    {
+        curr_addr = ROM_PAGE1_MIN_ADDR;
         return false;
+    }
+
+    // When only one page is full and next one is partially
+    if (a1 == ROM_PAGE1_MAX_ADDR && a2 > ROM_PAGE2_MIN_ADDR && a2 < ROM_PAGE2_MAX_ADDR)
+    {
+        curr_addr = a2;
+        return true;
+    }
+    if (a2 == ROM_PAGE2_MAX_ADDR && a1 > ROM_PAGE1_MIN_ADDR && a1 < ROM_PAGE1_MAX_ADDR)
+    {
+        curr_addr = a1;
+        return true;
     }
 
     // When only one page is full
@@ -167,6 +187,7 @@ bool rom_init()
     {
         curr_addr = ROM_PAGE1_MIN_ADDR;
         return true;
+
     }
     if (a2 == ROM_PAGE2_MIN_ADDR && a1 == ROM_PAGE1_MAX_ADDR)
     {
