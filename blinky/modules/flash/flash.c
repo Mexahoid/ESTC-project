@@ -166,7 +166,7 @@ static uint32_t find_on_page(uint32_t start_addr, uint32_t stop_addr)
 
 bool flash_init()
 {
-    /*int real_words = 0;
+    int real_words = 0;
     int errors = 0;
     int nulls = 0;
 
@@ -192,7 +192,7 @@ bool flash_init()
         erase_page(FLASH_PAGE1_MIN_ADDR);
         erase_page(FLASH_PAGE2_MIN_ADDR);
         return false;
-    }*/
+    }
 
     // Start from first page
     curr_addr = FLASH_PAGE1_MIN_ADDR;

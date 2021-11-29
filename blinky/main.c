@@ -49,7 +49,7 @@
 #include "helpers.h"
 
 // Enables logging in main.
- #define MAIN_LOG
+// #define MAIN_LOG
 #ifdef MAIN_LOG
 #include "nrf_log.h"
 #include "nrf_log_backend_usb.h"
