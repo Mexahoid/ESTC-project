@@ -44,7 +44,7 @@
 #include "button.h"
 #include "color.h"
 
-#include "rom.h"
+#include "flash.h"
 
 // Enables logging in main.
 // #define MAIN_LOG
@@ -67,32 +67,32 @@ int main(void)
 {
     leds_init();
     color_rgb_t saved_rgb;
-    rom_word_t data;
+    flash_word_t data;
 
 #ifdef MAIN_LOG
     logs_init();
     NRF_LOG_INFO("Init led init");
     NRF_LOG_PROCESS();
     //nrf_delay_ms(3000);
-    bool rom_flag = false;
+    bool flash_flag = false;
     int addr = -1;
 #endif
 
-    if (!rom_init())
+    if (!flash_init())
     {
 #ifdef MAIN_LOG
         NRF_LOG_INFO("Not found data, init");
         NRF_LOG_PROCESS();
-        rom_flag = false;
+        flash_flag = false;
 #endif
 
         color_init(0);
     }
     else
     {
-        rom_load_word(&data);
+        flash_load_word(&data);
 #ifdef MAIN_LOG
-        rom_flag = true;
+        flash_flag = true;
         NRF_LOG_INFO("R: %d, G: %d, B: %d", data.first_byte, data.second_byte, data.third_byte);
         NRF_LOG_PROCESS();
 #endif
@@ -136,7 +136,7 @@ int main(void)
         logs_empty_action();
 #endif
 #ifdef MAIN_LOG
-        NRF_LOG_INFO("R: %d, G: %d, B: %d, rom_flag: %d, addr: %d", color.r, color.g, color.b, rom_flag, addr);
+        NRF_LOG_INFO("R: %d, G: %d, B: %d, flash_flag: %d, addr: %d", color.r, color.g, color.b, flash_flag, addr);
         NRF_LOG_PROCESS();
 #endif
         pwm_set_percentage(&pwm_context_led2_red, color.r);
@@ -170,7 +170,7 @@ int main(void)
                 NRF_LOG_INFO("Saving: R: %d, G: %d, B: %d, is_saved: %d", data.first_byte, data.second_byte, data.third_byte, is_saved);
                 NRF_LOG_PROCESS();
 #endif
-                rom_save_word(&data);
+                flash_save_word(&data);
             }
 
             break;

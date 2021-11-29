@@ -1,4 +1,4 @@
-#include "rom.h"
+#include "flash.h"
 
 // Current address in a memory.
 static int curr_addr;
@@ -34,11 +34,11 @@ static int prepare_word(int a, int b, int c)
     res <<= 8;             // x16 - x23
     res += c;
 
-    res |= count_bits_word(res & ROM_R0_MASK) << 28;
-    res |= count_bits_word(res & ROM_R1_MASK) << 27;
-    res |= count_bits_word(res & ROM_R2_MASK) << 25;
-    res |= count_bits_word(res & ROM_R3_MASK) << 21;
-    res |= count_bits_word(res & ROM_R4_MASK) << 13;
+    res |= count_bits_word(res & FLASH_R0_MASK) << 28;
+    res |= count_bits_word(res & FLASH_R1_MASK) << 27;
+    res |= count_bits_word(res & FLASH_R2_MASK) << 25;
+    res |= count_bits_word(res & FLASH_R3_MASK) << 21;
+    res |= count_bits_word(res & FLASH_R4_MASK) << 13;
 
     return res;
 }
@@ -47,11 +47,11 @@ static int prepare_word(int a, int b, int c)
 static int check_word(int word)
 {
     int err = 0;
-    err |= count_bits_word(word & ROM_R0_MASK);
-    err |= count_bits_word(word & ROM_R1_MASK) << 1;
-    err |= count_bits_word(word & ROM_R2_MASK) << 2;
-    err |= count_bits_word(word & ROM_R3_MASK) << 3;
-    err |= count_bits_word(word & ROM_R4_MASK) << 4;
+    err |= count_bits_word(word & FLASH_R0_MASK);
+    err |= count_bits_word(word & FLASH_R1_MASK) << 1;
+    err |= count_bits_word(word & FLASH_R2_MASK) << 2;
+    err |= count_bits_word(word & FLASH_R3_MASK) << 3;
+    err |= count_bits_word(word & FLASH_R4_MASK) << 4;
 
     return err;
 }
@@ -90,7 +90,7 @@ static void set_word(int word)
 }
 
 // Parses word from Hamming code.
-static void parse_word(int word, rom_word_t *data)
+static void parse_word(int word, flash_word_t *data)
 {
     int x = word;
 
@@ -136,7 +136,7 @@ static int find_on_page(int start_addr, int stop_addr)
     int word;
     int counter = 0;
 
-    for (int paddr = start_addr; paddr < stop_addr; paddr += ROM_ADDR_STEP)
+    for (int paddr = start_addr; paddr < stop_addr; paddr += FLASH_ADDR_STEP)
     {
         word = get_word(paddr);
         if (is_word_null(word))
@@ -146,66 +146,66 @@ static int find_on_page(int start_addr, int stop_addr)
     return stop_addr;
 }
 
-bool rom_init()
+bool flash_init()
 {
 
-    /*erase_page(ROM_PAGE1_MIN_ADDR);
-    erase_page(ROM_PAGE2_MIN_ADDR);
+    /*erase_page(FLASH_PAGE1_MIN_ADDR);
+    erase_page(FLASH_PAGE2_MIN_ADDR);
     return false;*/
 
 
     // Start from first page
-    curr_addr = ROM_PAGE1_MIN_ADDR;
-    int a1 = find_on_page(ROM_PAGE1_MIN_ADDR, ROM_PAGE1_MAX_ADDR);
-    int a2 = find_on_page(ROM_PAGE2_MIN_ADDR, ROM_PAGE2_MAX_ADDR);
+    curr_addr = FLASH_PAGE1_MIN_ADDR;
+    int a1 = find_on_page(FLASH_PAGE1_MIN_ADDR, FLASH_PAGE1_MAX_ADDR);
+    int a2 = find_on_page(FLASH_PAGE2_MIN_ADDR, FLASH_PAGE2_MAX_ADDR);
 
     // When both pages are clean
-    if (a1 == ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MIN_ADDR)
+    if (a1 == FLASH_PAGE1_MIN_ADDR && a2 == FLASH_PAGE2_MIN_ADDR)
     {
-        curr_addr = ROM_PAGE1_MIN_ADDR;
+        curr_addr = FLASH_PAGE1_MIN_ADDR;
         return 0;
     }
 
     // When both pages are full, for now no way of identifying what record is last
-    if (a1 == ROM_PAGE1_MAX_ADDR && a2 == ROM_PAGE2_MAX_ADDR)
+    if (a1 == FLASH_PAGE1_MAX_ADDR && a2 == FLASH_PAGE2_MAX_ADDR)
     {
-        curr_addr = ROM_PAGE1_MIN_ADDR;
+        curr_addr = FLASH_PAGE1_MIN_ADDR;
         return false;
     }
 
     // When only one page is full and next one is partially
-    if (a1 == ROM_PAGE1_MAX_ADDR && a2 > ROM_PAGE2_MIN_ADDR && a2 < ROM_PAGE2_MAX_ADDR)
+    if (a1 == FLASH_PAGE1_MAX_ADDR && a2 > FLASH_PAGE2_MIN_ADDR && a2 < FLASH_PAGE2_MAX_ADDR)
     {
         curr_addr = a2;
         return true;
     }
-    if (a2 == ROM_PAGE2_MAX_ADDR && a1 > ROM_PAGE1_MIN_ADDR && a1 < ROM_PAGE1_MAX_ADDR)
+    if (a2 == FLASH_PAGE2_MAX_ADDR && a1 > FLASH_PAGE1_MIN_ADDR && a1 < FLASH_PAGE1_MAX_ADDR)
     {
         curr_addr = a1;
         return true;
     }
 
     // When only one page is full
-    if (a1 == ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MAX_ADDR)
+    if (a1 == FLASH_PAGE1_MIN_ADDR && a2 == FLASH_PAGE2_MAX_ADDR)
     {
-        curr_addr = ROM_PAGE1_MIN_ADDR;
+        curr_addr = FLASH_PAGE1_MIN_ADDR;
         return true;
 
     }
-    if (a2 == ROM_PAGE2_MIN_ADDR && a1 == ROM_PAGE1_MAX_ADDR)
+    if (a2 == FLASH_PAGE2_MIN_ADDR && a1 == FLASH_PAGE1_MAX_ADDR)
     {
-        curr_addr = ROM_PAGE2_MIN_ADDR;
+        curr_addr = FLASH_PAGE2_MIN_ADDR;
         return true;
     }
 
     // When there are some records on a page
-    if (a1 != ROM_PAGE1_MIN_ADDR && a2 == ROM_PAGE2_MIN_ADDR)
+    if (a1 != FLASH_PAGE1_MIN_ADDR && a2 == FLASH_PAGE2_MIN_ADDR)
     {
         curr_addr = a1;
         return true;
     }
 
-    if (a2 != ROM_PAGE2_MIN_ADDR && a1 == ROM_PAGE1_MIN_ADDR)
+    if (a2 != FLASH_PAGE2_MIN_ADDR && a1 == FLASH_PAGE1_MIN_ADDR)
     {
         curr_addr = a2;
         return true;
@@ -213,29 +213,29 @@ bool rom_init()
     return false;
 }
 
-void rom_save_word(rom_word_t* const data)
+void flash_save_word(flash_word_t* const data)
 {
     int word = prepare_word(data->first_byte, data->second_byte, data->third_byte);
-    if (curr_addr == ROM_PAGE1_MAX_ADDR)
+    if (curr_addr == FLASH_PAGE1_MAX_ADDR)
     {
-        erase_page(ROM_PAGE2_MIN_ADDR);
-        curr_addr = ROM_PAGE2_MIN_ADDR; //irrelevant but still
+        erase_page(FLASH_PAGE2_MIN_ADDR);
+        curr_addr = FLASH_PAGE2_MIN_ADDR; //irrelevant but still
     }
 
-    if (curr_addr == ROM_PAGE2_MAX_ADDR)
+    if (curr_addr == FLASH_PAGE2_MAX_ADDR)
     {
-        erase_page(ROM_PAGE1_MIN_ADDR);
-        curr_addr = ROM_PAGE1_MIN_ADDR;
+        erase_page(FLASH_PAGE1_MIN_ADDR);
+        curr_addr = FLASH_PAGE1_MIN_ADDR;
     }
 
     set_word(word);
-    curr_addr += ROM_ADDR_STEP;
+    curr_addr += FLASH_ADDR_STEP;
 }
 
-void rom_load_word(rom_word_t* const data)
+void flash_load_word(flash_word_t* const data)
 {
-    int addr = curr_addr == ROM_PAGE1_MIN_ADDR ? ROM_PAGE2_MAX_ADDR : curr_addr;
-    addr -= ROM_ADDR_STEP;
+    int addr = curr_addr == FLASH_PAGE1_MIN_ADDR ? FLASH_PAGE2_MAX_ADDR : curr_addr;
+    addr -= FLASH_ADDR_STEP;
     int word = get_word(addr);
     parse_word(word, data);
 }
