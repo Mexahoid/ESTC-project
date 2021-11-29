@@ -18,10 +18,8 @@ void convert_rgb_hsv(color_rgb_t *rgb, color_hsv_t *hsv)
     int g = rgb->g * 100 / 255;
     int b = rgb->b * 100 / 255;
 
-    int max_p =
-        (r >= g && r >= b) ? r : ((g >= r && g >= b) ? g : b);
-    int min_p =
-        (r <= g && r <= b) ? r : ((g <= r && g <= b) ? g : b);
+    int max_p = helper_max(r, helper_max(g, b));
+    int min_p = helper_min(r, helper_min(g, b));
 
     hsv->v = max_p;
 
