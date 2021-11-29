@@ -94,6 +94,9 @@ static void parse_word(int word, rom_word_t *data)
 {
     int x = word;
 
+    int errors = check_word(word);
+    fix_word(&word, errors);
+
     int b = x & 0b11111111;
     x = x >> 8;
 

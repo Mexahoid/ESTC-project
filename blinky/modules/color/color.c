@@ -134,7 +134,7 @@ static void convert_hsv_rgb(color_hsv_t* const hsv, color_rgb_t* const rgb)
 void color_init(color_rgb_t* const state)
 {
     mode = COLOR_MODE_OFF;
-    if (state != 0)
+    if (state != NULL)
     {
         state->r = helper_clamp(state->r, 0, 255);
         state->g = helper_clamp(state->g, 0, 255);
