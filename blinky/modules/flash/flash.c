@@ -19,10 +19,10 @@
 #define FLASH_R4_MASK 0b00000000000000000011111111111111
 
 // Current address in a memory.
-static int curr_addr;
+static uint32_t curr_addr;
 
 // Returns parity bit of a 32bit word.
-static int count_bits_word(int word)
+static int count_bits_word(uint32_t word)
 {
     int res = 0;
     for (int i = 0; i < 32; i++)
@@ -31,9 +31,9 @@ static int count_bits_word(int word)
 }
 
 // Makes Hamming code for a word.
-static int prepare_word(int a, int b, int c)
+static uint32_t prepare_word(uint8_t a, uint8_t b, uint8_t c)
 {
-    int res = 0;
+    uint32_t res = 0;
     // first 3 bits are 000
     //r0 r1
     res <<= 1; // x0
@@ -62,7 +62,7 @@ static int prepare_word(int a, int b, int c)
 }
 
 // Checks if there any bit errors in a word.
-static int check_word(int word)
+static int check_word(uint32_t word)
 {
     int err = 0;
     err |= count_bits_word(word & FLASH_R0_MASK);
@@ -75,7 +75,7 @@ static int check_word(int word)
 }
 
 // Fixes 1 error in a word.
-static void fix_word(int *word, int err)
+static void fix_word(uint32_t *word, int err)
 {
     if (err == 0)
         return;
@@ -86,45 +86,45 @@ static void fix_word(int *word, int err)
         *word |= mask;
     else
     {
-        int x = 0b11011111111111111111111111111111;
+        uint32_t x = 0b11011111111111111111111111111111;
         mask = x >> err;
         *word &= mask;
     }
 }
 
 // Reads word from ROM.
-static int get_word(int addr)
+static uint32_t get_word(uint32_t addr)
 {
-    int *ptr = (int *)addr;
-    int value = *ptr;
+    uint32_t *ptr = (uint32_t *)addr;
+    uint32_t value = *ptr;
 
     return value;
 }
 
 // Writes word to ROM.
-static void set_word(int word)
+static void set_word(uint32_t word)
 {
     nrf_nvmc_write_word((uint32_t)curr_addr, word);
 }
 
 // Parses word from Hamming code.
-static void parse_word(int word, flash_word_t *data)
+static void parse_word(uint32_t word, flash_word_t *data)
 {
-    int x = word;
+    uint32_t x = word;
 
     int errors = check_word(word);
     fix_word(&word, errors);
 
-    int b = x & 0b11111111;
+    uint8_t b = x & 0b11111111;
     x = x >> 8;
 
-    int g = x & 0b00011111;
+    uint8_t g = x & 0b00011111;
     x >>= 5;
     x >>= 1;
     g += (x & 0b111) << 5;
     x >>= 3;
 
-    int r = x & 0b1111;
+    uint8_t r = x & 0b1111;
     x >>= 4;
     x >>= 1;
     r += (x & 0b111) << 4;
@@ -137,24 +137,24 @@ static void parse_word(int word, flash_word_t *data)
 }
 
 // Checks if it is data record or a 111..... record.
-static bool is_word_null(int word)
+static bool is_word_null(uint32_t word)
 {
     return (word & 0b11100000000000000000000000000000) != 0;
 }
 
 // Clears page.
-static void erase_page(int addr)
+static void erase_page(uint32_t addr)
 {
     nrf_nvmc_page_erase(addr);
 }
 
 // Finds 111... record on a page.
-static int find_on_page(int start_addr, int stop_addr)
+static uint32_t find_on_page(uint32_t start_addr, uint32_t stop_addr)
 {
-    int word;
+    uint32_t word;
     int counter = 0;
 
-    for (int paddr = start_addr; paddr < stop_addr; paddr += FLASH_ADDR_STEP)
+    for (uint32_t paddr = start_addr; paddr < stop_addr; paddr += FLASH_ADDR_STEP)
     {
         word = get_word(paddr);
         if (is_word_null(word))
@@ -166,14 +166,14 @@ static int find_on_page(int start_addr, int stop_addr)
 
 bool flash_init()
 {
-    int real_words = 0;
+    /*int real_words = 0;
     int errors = 0;
     int nulls = 0;
 
-    int start_addr = FLASH_PAGE1_MIN_ADDR;
+    uint32_t start_addr = FLASH_PAGE1_MIN_ADDR;
     while (start_addr < FLASH_PAGE2_MAX_ADDR)
     {
-        int word = get_word(start_addr);
+        uint32_t word = get_word(start_addr);
         start_addr += FLASH_ADDR_STEP;
         if (!is_word_null(word))
             real_words++;
@@ -192,12 +192,12 @@ bool flash_init()
         erase_page(FLASH_PAGE1_MIN_ADDR);
         erase_page(FLASH_PAGE2_MIN_ADDR);
         return false;
-    }
+    }*/
 
     // Start from first page
     curr_addr = FLASH_PAGE1_MIN_ADDR;
-    int a1 = find_on_page(FLASH_PAGE1_MIN_ADDR, FLASH_PAGE1_MAX_ADDR);
-    int a2 = find_on_page(FLASH_PAGE2_MIN_ADDR, FLASH_PAGE2_MAX_ADDR);
+    uint32_t a1 = find_on_page(FLASH_PAGE1_MIN_ADDR, FLASH_PAGE1_MAX_ADDR);
+    uint32_t a2 = find_on_page(FLASH_PAGE2_MIN_ADDR, FLASH_PAGE2_MAX_ADDR);
 
     // When both pages are clean
     if (a1 == FLASH_PAGE1_MIN_ADDR && a2 == FLASH_PAGE2_MIN_ADDR)
@@ -255,7 +255,7 @@ bool flash_init()
 
 void flash_save_word(flash_word_t* const data)
 {
-    int word = prepare_word(data->first_byte, data->second_byte, data->third_byte);
+    uint32_t word = prepare_word(data->first_byte, data->second_byte, data->third_byte);
     if (curr_addr == FLASH_PAGE1_MAX_ADDR)
     {
         erase_page(FLASH_PAGE2_MIN_ADDR);
@@ -274,8 +274,8 @@ void flash_save_word(flash_word_t* const data)
 
 void flash_load_word(flash_word_t* const data)
 {
-    int addr = curr_addr == FLASH_PAGE1_MIN_ADDR ? FLASH_PAGE2_MAX_ADDR : curr_addr;
+    uint32_t addr = curr_addr == FLASH_PAGE1_MIN_ADDR ? FLASH_PAGE2_MAX_ADDR : curr_addr;
     addr -= FLASH_ADDR_STEP;
-    int word = get_word(addr);
+    uint32_t word = get_word(addr);
     parse_word(word, data);
 }

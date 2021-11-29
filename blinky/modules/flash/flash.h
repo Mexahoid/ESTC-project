@@ -7,13 +7,13 @@
 typedef struct
 {
     // First byte of word.
-    unsigned char first_byte;
+    uint8_t first_byte;
     // Second byte of word.
-    unsigned char second_byte;
+    uint8_t second_byte;
     // Third byte of word.
-    unsigned char third_byte;
+    uint8_t third_byte;
     // Fourth marking byte, not used.
-    unsigned char mark_byte;
+    uint8_t mark_byte;
 } flash_word_t;
 
 // Inits module, return true if there any data records found.

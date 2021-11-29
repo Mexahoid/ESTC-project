@@ -46,8 +46,10 @@
 
 #include "flash.h"
 
+#include "helpers.h"
+
 // Enables logging in main.
-// #define MAIN_LOG
+ #define MAIN_LOG
 #ifdef MAIN_LOG
 #include "nrf_log.h"
 #include "nrf_log_backend_usb.h"
@@ -85,7 +87,6 @@ int main(void)
         NRF_LOG_PROCESS();
         flash_flag = false;
 #endif
-
         color_init(NULL);
     }
     else
@@ -96,10 +97,17 @@ int main(void)
         NRF_LOG_INFO("R: %d, G: %d, B: %d", data.first_byte, data.second_byte, data.third_byte);
         NRF_LOG_PROCESS();
 #endif
-        saved_rgb.r = data.first_byte;
-        saved_rgb.g = data.second_byte;
-        saved_rgb.b = data.third_byte;
-        color_init(&saved_rgb);
+        saved_rgb.r = (int)data.first_byte;
+        saved_rgb.g = (int)data.second_byte;
+        saved_rgb.b = (int)data.third_byte;
+        // Just in case
+        saved_rgb.r = helper_clamp(saved_rgb.r, 0, 255);
+        saved_rgb.g = helper_clamp(saved_rgb.g, 0, 255);
+        saved_rgb.b = helper_clamp(saved_rgb.b, 0, 255);
+
+        color_hsv_t hsv;
+        color_convert_rgb_hsv(&saved_rgb, &hsv);
+        color_init(&hsv);
     }
 
     color_pwm_t color;
@@ -162,9 +170,9 @@ int main(void)
             if (!is_saved)
             {
                 color_get_current_rgb(&saved_rgb);
-                data.first_byte = (unsigned char)(saved_rgb.r);
-                data.second_byte = (unsigned char)(saved_rgb.g);
-                data.third_byte = (unsigned char)(saved_rgb.b);
+                data.first_byte = (uint8_t)(saved_rgb.r);
+                data.second_byte = (uint8_t)(saved_rgb.g);
+                data.third_byte = (uint8_t)(saved_rgb.b);
                 is_saved = true;
 #ifdef MAIN_LOG
                 NRF_LOG_INFO("Saving: R: %d, G: %d, B: %d, is_saved: %d", data.first_byte, data.second_byte, data.third_byte, is_saved);

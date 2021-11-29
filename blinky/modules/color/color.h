@@ -53,7 +53,10 @@ color_mode_t color_get_mode();
 // Returns current RGB model color.
 void color_get_current_rgb(color_rgb_t* const color);
 
+// Converts RGB to HSV.
+void color_convert_rgb_hsv(color_rgb_t* const rgb, color_hsv_t* const hsv);
+
 // Initializes color module.
-void color_init(color_rgb_t* const state);
+void color_init(color_hsv_t* const state);
 
 #endif
