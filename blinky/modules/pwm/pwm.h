@@ -4,13 +4,6 @@
 #include "nrfx_systick.h"
 #include <string.h>
 
-// Max inner counter counts before nullying.
-#define PWM_COUNTER_MAX 1000
-// Max amount of ms in s (1000 lol).
-#define PWM_MAX_MS_DELAY 1000
-// Inner counter us delay.
-#define PWM_TICK_DELAY_US 20
-
 // PWM context struct.
 typedef struct
 {

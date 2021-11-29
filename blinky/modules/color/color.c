@@ -2,6 +2,16 @@
 #include "helpers.h"
 #include <math.h>
 
+// Delay between incdec calls (in us).
+#define COLOR_DELAY_US 45000
+
+// Default value for hue.
+#define COLOR_DEFAULT_HUE 0
+// Default value for saturation.
+#define COLOR_DEFAULT_SAT 100
+// Default value for brightness.
+#define COLOR_DEFAULT_BRI 100
+
 // Current color mode.
 static color_mode_t mode;
 // Current HSV color
