@@ -32,7 +32,6 @@ typedef struct
     nrfx_systick_state_t pwm_timestamp_ms;
 } pwm_ctx_t;
 
-
 // Modulates GPIO with PWM.
 void pwm_modulate(pwm_ctx_t* const context);
 

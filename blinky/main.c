@@ -86,7 +86,7 @@ int main(void)
         flash_flag = false;
 #endif
 
-        color_init(0);
+        color_init(NULL);
     }
     else
     {

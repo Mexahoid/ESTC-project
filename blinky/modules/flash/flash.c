@@ -166,11 +166,33 @@ static int find_on_page(int start_addr, int stop_addr)
 
 bool flash_init()
 {
+    int real_words = 0;
+    int errors = 0;
+    int nulls = 0;
 
-    /*erase_page(FLASH_PAGE1_MIN_ADDR);
-    erase_page(FLASH_PAGE2_MIN_ADDR);
-    return false;*/
+    int start_addr = FLASH_PAGE1_MIN_ADDR;
+    while (start_addr < FLASH_PAGE2_MAX_ADDR)
+    {
+        int word = get_word(start_addr);
+        start_addr += FLASH_ADDR_STEP;
+        if (!is_word_null(word))
+            real_words++;
+        else
+        {
+            nulls++;
+            continue;
+        }
+        int err = check_word(word);
+        if (err > 0)
+            errors++;
+    }
 
+    if (errors > real_words && errors > nulls)
+    {
+        erase_page(FLASH_PAGE1_MIN_ADDR);
+        erase_page(FLASH_PAGE2_MIN_ADDR);
+        return false;
+    }
 
     // Start from first page
     curr_addr = FLASH_PAGE1_MIN_ADDR;
