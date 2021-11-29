@@ -4,7 +4,7 @@
 static int curr_addr;
 
 // Returns parity bit of a 32bit word.
-int count_bits_word(int word)
+static int count_bits_word(int word)
 {
     int res = 0;
     for (int i = 0; i < 32; i++)
@@ -13,7 +13,7 @@ int count_bits_word(int word)
 }
 
 // Makes Hamming code for a word.
-int prepare_word(int a, int b, int c)
+static int prepare_word(int a, int b, int c)
 {
     int res = 0;
     // first 3 bits are 000
@@ -44,7 +44,7 @@ int prepare_word(int a, int b, int c)
 }
 
 // Checks if there any bit errors in a word.
-int check_word(int word)
+static int check_word(int word)
 {
     int err = 0;
     err |= count_bits_word(word & ROM_R0_MASK);
@@ -57,7 +57,7 @@ int check_word(int word)
 }
 
 // Fixes 1 error in a word.
-void fix_word(int *word, int err)
+static void fix_word(int *word, int err)
 {
     if (err == 0)
         return;
@@ -75,7 +75,7 @@ void fix_word(int *word, int err)
 }
 
 // Reads word from ROM.
-int get_word(int addr)
+static int get_word(int addr)
 {
     int *ptr = (int *)addr;
     int value = *ptr;
@@ -84,13 +84,13 @@ int get_word(int addr)
 }
 
 // Writes word to ROM.
-void set_word(int word)
+static void set_word(int word)
 {
     nrf_nvmc_write_word((uint32_t)curr_addr, word);
 }
 
 // Parses word from Hamming code.
-void parse_word(int word, rom_word_t *data)
+static void parse_word(int word, rom_word_t *data)
 {
     int x = word;
 
@@ -116,19 +116,19 @@ void parse_word(int word, rom_word_t *data)
 }
 
 // Checks if it is data record or a 111..... record.
-bool is_word_null(int word)
+static bool is_word_null(int word)
 {
     return (word & 0b11100000000000000000000000000000) != 0;
 }
 
 // Clears page.
-void erase_page(int addr)
+static void erase_page(int addr)
 {
     nrf_nvmc_page_erase(addr);
 }
 
 // Finds 111... record on a page.
-int find_on_page(int start_addr, int stop_addr)
+static int find_on_page(int start_addr, int stop_addr)
 {
     int word;
     int counter = 0;
@@ -210,7 +210,7 @@ bool rom_init()
     return false;
 }
 
-void rom_save_word(rom_word_t *data)
+void rom_save_word(rom_word_t* const data)
 {
     int word = prepare_word(data->first_byte, data->second_byte, data->third_byte);
     if (curr_addr == ROM_PAGE1_MAX_ADDR)
@@ -229,7 +229,7 @@ void rom_save_word(rom_word_t *data)
     curr_addr += ROM_ADDR_STEP;
 }
 
-void rom_load_word(rom_word_t *data)
+void rom_load_word(rom_word_t* const data)
 {
     int addr = curr_addr == ROM_PAGE1_MIN_ADDR ? ROM_PAGE2_MAX_ADDR : curr_addr;
     addr -= ROM_ADDR_STEP;

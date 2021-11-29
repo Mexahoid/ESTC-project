@@ -38,9 +38,9 @@ typedef struct
 bool rom_init();
 
 // Saves word in a ROM.
-void rom_save_word(rom_word_t *data);
+void rom_save_word(rom_word_t* const data);
 
 // Loads word from a ROM.
-void rom_load_word(rom_word_t *data);
+void rom_load_word(rom_word_t* const data);
 
 #endif
