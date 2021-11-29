@@ -65,6 +65,8 @@ void pwm_set_percentage(pwm_ctx_t* context, int percentage)
 
 void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int total_time, int frequency, int gpio)
 {
+    memset(context, sizeof(*context), 0);
+
     if (!is_systick_init)
     {
         nrfx_systick_init();
@@ -82,4 +84,5 @@ void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int to
     context->current_ms = 0;
     context->pwm_percentage = 0;
     context->pwm_on_time = 0;
+    context->pwm_counter = 0;
 }

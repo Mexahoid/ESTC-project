@@ -105,14 +105,14 @@ int main(void)
     color_pwm_t color;
     color_get_current_pwm_percentages(&color);
 
+    pwm_ctx_t pwm_context_led2_blue;
+    pwm_init(&pwm_context_led2_blue, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_BLUE);
+
     pwm_ctx_t pwm_context_led2_red;
     pwm_init(&pwm_context_led2_red, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_RED);
 
     pwm_ctx_t pwm_context_led2_green;
     pwm_init(&pwm_context_led2_green, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_GREEN);
-
-    pwm_ctx_t pwm_context_led2_blue;
-    pwm_init(&pwm_context_led2_blue, gpio_action, LED_ON, 0, PWM_FREQUENCY, LED2_BLUE);
 
     pwm_ctx_t pwm_context_led1_green;
     pwm_init(&pwm_context_led1_green, gpio_action, LED_ON, BLINK_DELAY_MS, PWM_FREQUENCY, LED1_GREEN);

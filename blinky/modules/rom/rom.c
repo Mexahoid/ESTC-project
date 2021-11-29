@@ -145,11 +145,11 @@ int find_on_page(int start_addr, int stop_addr)
 
 bool rom_init()
 {
-    /*
-    erase_page(ROM_PAGE1_MIN_ADDR);
+
+    /*erase_page(ROM_PAGE1_MIN_ADDR);
     erase_page(ROM_PAGE2_MIN_ADDR);
-    return false;
-    */
+    return false;*/
+
 
     // Start from first page
     curr_addr = ROM_PAGE1_MIN_ADDR;

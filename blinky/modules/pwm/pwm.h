@@ -2,6 +2,7 @@
 #define MY_MODULE_PWM
 
 #include "nrfx_systick.h"
+#include <string.h>
 
 // Max inner counter counts before nullying.
 #define PWM_COUNTER_MAX 1000
