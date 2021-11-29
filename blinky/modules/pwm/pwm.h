@@ -41,15 +41,15 @@ typedef struct
 
 
 // Modulates GPIO with PWM.
-void pwm_modulate(pwm_ctx_t* context);
+void pwm_modulate(pwm_ctx_t* const context);
 
 // Looks every PWM ms for a PWM percentage recalc.
-void pwm_percentage_recalc(pwm_ctx_t* context);
+void pwm_percentage_recalc(pwm_ctx_t* const context);
 
 // Initializes PWM module.
-void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int on_time, int frequency, int gpio);
+void pwm_init(pwm_ctx_t* const context, void (*action)(int, int), int state_on, int on_time, int frequency, int gpio);
 
 // Sets PWM percentage.
-void pwm_set_percentage(pwm_ctx_t* context, int percentage);
+void pwm_set_percentage(pwm_ctx_t* const context, int percentage);
 
 #endif

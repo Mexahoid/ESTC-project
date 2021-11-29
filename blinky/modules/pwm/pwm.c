@@ -4,7 +4,7 @@
 static bool is_systick_init = false;
 
 // Returns true if at least ms has passed.
-static bool is_ms_passed(pwm_ctx_t* context)
+static bool is_ms_passed(pwm_ctx_t* const context)
 {
     if (!nrfx_systick_test(&(context->pwm_timestamp_ms), PWM_MAX_MS_DELAY))
         return false;
@@ -14,7 +14,7 @@ static bool is_ms_passed(pwm_ctx_t* context)
 }
 
 // Updates inner counter every PWM percent delay.
-static void tick_update(pwm_ctx_t* context)
+static void tick_update(pwm_ctx_t* const context)
 {
     if (!nrfx_systick_test(&(context->pwm_timestamp_us), PWM_TICK_DELAY_US))
         return;
@@ -32,7 +32,7 @@ static void tick_update(pwm_ctx_t* context)
 }
 
 
-void pwm_modulate(pwm_ctx_t* context)
+void pwm_modulate(pwm_ctx_t* const context)
 {
     tick_update(context);
     if (context->pwm_counter < context->pwm_on_time)
@@ -41,7 +41,7 @@ void pwm_modulate(pwm_ctx_t* context)
         context->pwm_action(context->pwm_gpio, !context->pwm_state_on);
 }
 
-void pwm_percentage_recalc(pwm_ctx_t* context)
+void pwm_percentage_recalc(pwm_ctx_t* const context)
 {
     if (!is_ms_passed(context))
         return;
@@ -57,13 +57,13 @@ void pwm_percentage_recalc(pwm_ctx_t* context)
         context->pwm_percentage--;
 }
 
-void pwm_set_percentage(pwm_ctx_t* context, int percentage)
+void pwm_set_percentage(pwm_ctx_t* const context, int percentage)
 {
     context->pwm_percentage = percentage;
     context->pwm_on_time = context->pwm_duty_delay_us * context->pwm_percentage / 100;
 }
 
-void pwm_init(pwm_ctx_t* context, void (*action)(int, int), int state_on, int total_time, int frequency, int gpio)
+void pwm_init(pwm_ctx_t* const context, void (*action)(int, int), int state_on, int total_time, int frequency, int gpio)
 {
     memset(context, sizeof(*context), 0);
 

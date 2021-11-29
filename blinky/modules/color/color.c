@@ -12,7 +12,7 @@ static color_hsv_t current_incdec;
 static nrfx_systick_state_t timestamp_pwm_us;
 
 // Converts RGB model to HSV model.
-void convert_rgb_hsv(color_rgb_t *rgb, color_hsv_t *hsv)
+void convert_rgb_hsv(color_rgb_t* const rgb, color_hsv_t* const hsv)
 {
     int r = rgb->r * 100 / 255;
     int g = rgb->g * 100 / 255;
@@ -61,7 +61,7 @@ void convert_rgb_hsv(color_rgb_t *rgb, color_hsv_t *hsv)
 }
 
 // Converts HSV model to PWM model.
-void convert_hsv_pwm(color_hsv_t *hsv, color_pwm_t *pwm)
+void convert_hsv_pwm(color_hsv_t* const hsv, color_pwm_t* const pwm)
 {
     int hi = (int)(hsv->h / 60) % 6;
     double vmin = (100.0 - hsv->s) * hsv->v / 100.0;
@@ -116,7 +116,7 @@ void convert_hsv_pwm(color_hsv_t *hsv, color_pwm_t *pwm)
 }
 
 // Converts PWM model to RGB model.
-void convert_pwm_rgb(color_pwm_t *pwm, color_rgb_t *rgb)
+void convert_pwm_rgb(color_pwm_t* const pwm, color_rgb_t* const rgb)
 {
     rgb->r = pwm->r * 255 / 100;
     rgb->g = pwm->g * 255 / 100;
@@ -124,14 +124,14 @@ void convert_pwm_rgb(color_pwm_t *pwm, color_rgb_t *rgb)
 }
 
 // Converts HSV model to RGB model.
-void convert_hsv_rgb(color_hsv_t *hsv, color_rgb_t *rgb)
+void convert_hsv_rgb(color_hsv_t* const hsv, color_rgb_t* const rgb)
 {
     color_pwm_t pwm;
     convert_hsv_pwm(hsv, &pwm);
     convert_pwm_rgb(&pwm, rgb);
 }
 
-void color_init(color_rgb_t *state)
+void color_init(color_rgb_t* const state)
 {
     mode = COLOR_MODE_OFF;
     if (state != 0)
@@ -189,12 +189,12 @@ color_mode_t color_get_mode()
     return mode;
 }
 
-void color_get_current_pwm_percentages(color_pwm_t *color)
+void color_get_current_pwm_percentages(color_pwm_t* const color)
 {
     convert_hsv_pwm(&current, color);
 }
 
-void color_get_current_rgb(color_rgb_t *color)
+void color_get_current_rgb(color_rgb_t* const color)
 {
     convert_hsv_rgb(&current, color);
 }

@@ -49,7 +49,7 @@ typedef enum {
 } color_mode_t;
 
 // Converts HSV model color to PWM model.
-void color_get_current_pwm_percentages(color_pwm_t *color);
+void color_get_current_pwm_percentages(color_pwm_t* const color);
 
 // Changes mode NOP - HUE - SAT - BRI - NOP.
 void color_change_mode();
@@ -61,9 +61,9 @@ void color_increase_mode_value();
 color_mode_t color_get_mode();
 
 // Returns current RGB model color.
-void color_get_current_rgb(color_rgb_t *color);
+void color_get_current_rgb(color_rgb_t* const color);
 
 // Initializes color module.
-void color_init(color_rgb_t *state);
+void color_init(color_rgb_t* const state);
 
 #endif
