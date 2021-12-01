@@ -1,7 +1,11 @@
 #include "flash.h"
 
+// Special record addr.
+#define FLASH_START_ADDR 0x000DD000
+// Special marking word.
+#define FLASH_MARK_WORD 0b00001010101010101010101010101010
 // Min addr of 1st page.
-#define FLASH_PAGE1_MIN_ADDR 0x000DD000
+#define FLASH_PAGE1_MIN_ADDR 0x000DD004
 // Max addr of 1st page.
 #define FLASH_PAGE1_MAX_ADDR 0x000DE000
 // Min addr of 2nd page (also is max for 1st).
@@ -164,36 +168,37 @@ static uint32_t find_on_page(uint32_t start_addr, uint32_t stop_addr)
     return stop_addr;
 }
 
+// Clears 1st page and adds marking word.
+void reinit_first_page()
+{
+    uint32_t word = FLASH_MARK_WORD;
+    erase_page(FLASH_PAGE1_MIN_ADDR);
+    curr_addr = FLASH_START_ADDR;
+    set_word(word);
+    curr_addr = FLASH_PAGE1_MIN_ADDR;
+}
+
+// Pre-inits memory.
+void memory_init()
+{
+    uint32_t start_addr = FLASH_START_ADDR;
+    uint32_t word = get_word(start_addr);
+    // If 111.......
+    if(is_word_null(word) || ((word & FLASH_MARK_WORD) != FLASH_MARK_WORD))
+    {
+        reinit_first_page();
+        erase_page(FLASH_PAGE2_MIN_ADDR);
+        return;
+    }
+
+    if(!is_word_null(word))
+        return;
+
+}
+
 bool flash_init()
 {
-    int real_words = 0;
-    int errors = 0;
-    int nulls = 0;
-
-    uint32_t start_addr = FLASH_PAGE1_MIN_ADDR;
-    while (start_addr < FLASH_PAGE2_MAX_ADDR)
-    {
-        uint32_t word = get_word(start_addr);
-        start_addr += FLASH_ADDR_STEP;
-        if (!is_word_null(word))
-            real_words++;
-        else
-        {
-            nulls++;
-            continue;
-        }
-        int err = check_word(word);
-        if (err > 0)
-            errors++;
-    }
-
-    if (errors > real_words && errors > nulls)
-    {
-        erase_page(FLASH_PAGE1_MIN_ADDR);
-        erase_page(FLASH_PAGE2_MIN_ADDR);
-        return false;
-    }
-
+    memory_init();
     // Start from first page
     curr_addr = FLASH_PAGE1_MIN_ADDR;
     uint32_t a1 = find_on_page(FLASH_PAGE1_MIN_ADDR, FLASH_PAGE1_MAX_ADDR);
@@ -264,7 +269,7 @@ void flash_save_word(flash_word_t* const data)
 
     if (curr_addr == FLASH_PAGE2_MAX_ADDR)
     {
-        erase_page(FLASH_PAGE1_MIN_ADDR);
+        reinit_first_page();
         curr_addr = FLASH_PAGE1_MIN_ADDR;
     }
 
