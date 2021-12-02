@@ -11,7 +11,7 @@
 void logs_init();
 
 // Just an empty action (it doesn't work without it).
-void logs_empty_action();
+void logs_log_process();
 
 
 #endif

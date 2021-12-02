@@ -59,6 +59,11 @@
 #include "nrf_delay.h"
 #endif
 
+#define USB
+#ifdef USB
+#include "usb.h"
+#endif
+
 // Delegate for PWM methods.
 void gpio_action(int gpio, int state_on)
 {
@@ -71,32 +76,24 @@ int main(void)
     color_rgb_t saved_rgb;
     flash_word_t data;
 
+#ifdef USB
+    usb_init();
+#endif
+
 #ifdef MAIN_LOG
+#ifndef USB
     logs_init();
-    NRF_LOG_INFO("Init led init");
-    NRF_LOG_PROCESS();
-    //nrf_delay_ms(3000);
-    bool flash_flag = false;
-    int addr = -1;
+#endif
 #endif
 
     if (!flash_init())
     {
-#ifdef MAIN_LOG
-        NRF_LOG_INFO("Not found data, init");
-        NRF_LOG_PROCESS();
-        flash_flag = false;
-#endif
         color_init(NULL);
     }
     else
     {
         flash_load_word(&data);
-#ifdef MAIN_LOG
-        flash_flag = true;
-        NRF_LOG_INFO("R: %d, G: %d, B: %d", data.first_byte, data.second_byte, data.third_byte);
-        NRF_LOG_PROCESS();
-#endif
+
         saved_rgb.r = (int)data.first_byte;
         saved_rgb.g = (int)data.second_byte;
         saved_rgb.b = (int)data.third_byte;
@@ -140,11 +137,14 @@ int main(void)
 
     while (true)
     {
-#ifdef MAIN_LOG
-        logs_empty_action();
+
+#ifdef USB
+        usb_process();
 #endif
+
+
 #ifdef MAIN_LOG
-        NRF_LOG_INFO("R: %d, G: %d, B: %d, flash_flag: %d, addr: %d", color.r, color.g, color.b, flash_flag, addr);
+        logs_log_process();
         NRF_LOG_PROCESS();
 #endif
         pwm_set_percentage(&pwm_context_led2_red, color.r);
@@ -219,7 +219,7 @@ int main(void)
 #ifdef MAIN_LOG
             if (color_old.r != color.r || color_old.g != color.g || color_old.b != color.b)
             {
-                NRF_LOG_INFO("R: %d, G: %d, B: %d, is_saved: %d", color.r, color.g, color.b, is_saved);
+                NRF_LOG_INFO("R: %d, G: %d, B: %d", color.r, color.g, color.b);
                 NRF_LOG_PROCESS();
                 color_old.r = color.r;
                 color_old.g = color.g;

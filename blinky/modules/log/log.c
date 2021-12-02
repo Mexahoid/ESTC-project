@@ -7,7 +7,7 @@ void logs_init()
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 }
 
-void logs_empty_action()
+void logs_log_process()
 {
     LOG_BACKEND_USB_PROCESS();
     NRF_LOG_PROCESS();

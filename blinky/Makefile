@@ -72,6 +72,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/helpers/helpers.c \
   $(SDK_ROOT)/modules/nrfx/hal/nrf_nvmc.c \
   $(PROJ_DIR)/modules/flash/flash.c \
+  $(PROJ_DIR)/modules/usb/usb.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -84,6 +85,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/modules/color \
   $(PROJ_DIR)/modules/helpers \
   $(PROJ_DIR)/modules/flash \
+  $(PROJ_DIR)/modules/usb \
   $(SDK_ROOT)/components/libraries/fifo \
   $(SDK_ROOT)/components/libraries/pwm \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
