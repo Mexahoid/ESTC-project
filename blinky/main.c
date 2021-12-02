@@ -77,7 +77,9 @@ int main(void)
     flash_word_t data;
 
 #ifdef USB
-    usb_init();
+    usb_data_t usb_data;
+    usb_data_t usb_data_old;
+    usb_init(&usb_data);
 #endif
 
 #ifdef MAIN_LOG
@@ -133,6 +135,17 @@ int main(void)
     color_old.b = color.b;
 #endif
 
+#ifdef USB
+    usb_data.usb_color_command = USB_COM_RGB;
+    usb_data.field1 = color.r;
+    usb_data.field2 = color.g;
+    usb_data.field3 = color.b;
+    usb_data_old.usb_color_command = usb_data.usb_color_command;
+    usb_data_old.field1 = usb_data.field1;
+    usb_data_old.field2 = usb_data.field2;
+    usb_data_old.field3 = usb_data.field3;
+#endif
+
     char sflag = 0;
 
     while (true)
@@ -140,12 +153,47 @@ int main(void)
 
 #ifdef USB
         usb_process();
+        if (usb_data_old.usb_color_command != usb_data.usb_color_command ||
+            usb_data_old.field1 != usb_data.field1 ||
+            usb_data_old.field2 != usb_data.field2 ||
+            usb_data_old.field3 != usb_data.field3)
+        {
+            usb_data_old.usb_color_command = usb_data.usb_color_command;
+            usb_data_old.field1 = usb_data.field1;
+            usb_data_old.field2 = usb_data.field2;
+            usb_data_old.field3 = usb_data.field3;
+            color_hsv_t hsv;
+
+            switch (usb_data.usb_color_command)
+            {
+            case USB_COM_RGB:
+                saved_rgb.r = usb_data.field1;
+                saved_rgb.g = usb_data.field2;
+                saved_rgb.b = usb_data.field3;
+                color_set_rgb(&saved_rgb);
+                break;
+
+            case USB_COM_HSV:
+
+                hsv.h = usb_data.field1;
+                hsv.s = usb_data.field2;
+                hsv.v = usb_data.field3;
+                color_set_hsv(&hsv);
+                break;
+            }
+            color_get_current_rgb(&saved_rgb);
+            data.first_byte = (uint8_t)(saved_rgb.r);
+            data.second_byte = (uint8_t)(saved_rgb.g);
+            data.third_byte = (uint8_t)(saved_rgb.b);
+            is_saved = true;
+            flash_save_word(&data);
+            color_get_current_pwm_percentages(&color);
+        }
 #endif
 
 
 #ifdef MAIN_LOG
         logs_log_process();
-        NRF_LOG_PROCESS();
 #endif
         pwm_set_percentage(&pwm_context_led2_red, color.r);
         pwm_set_percentage(&pwm_context_led2_green, color.g);
@@ -156,7 +204,6 @@ int main(void)
         pwm_modulate(&pwm_context_led2_green);
         pwm_modulate(&pwm_context_led2_blue);
         color_mode_t cm = color_get_mode();
-        //continue;
         switch (cm)
         {
         case COLOR_MODE_OFF:

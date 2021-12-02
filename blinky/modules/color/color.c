@@ -214,3 +214,15 @@ void color_get_current_rgb(color_rgb_t* const color)
 {
     convert_hsv_rgb(&current, color);
 }
+
+void color_set_rgb(color_rgb_t* const rgb)
+{
+    color_convert_rgb_hsv(rgb, &current);
+}
+
+void color_set_hsv(color_hsv_t* const hsv)
+{
+    current.h = helper_clamp(hsv->h, 0, 360);
+    current.s = helper_clamp(hsv->s, 0, 100);
+    current.v = helper_clamp(hsv->v, 0, 100);
+}

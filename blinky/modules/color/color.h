@@ -60,4 +60,10 @@ void color_convert_rgb_hsv(color_rgb_t* const rgb, color_hsv_t* const hsv);
 // Initializes color module.
 void color_init(color_hsv_t* const state);
 
+// Sets current RGB color.
+void color_set_rgb(color_rgb_t* const rgb);
+
+// Sets current HSV color.
+void color_set_hsv(color_hsv_t* const hsv);
+
 #endif

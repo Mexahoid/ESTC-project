@@ -1,10 +1,15 @@
 #include "usb.h"
 
+#define READ_SIZE 1
 static char m_rx_buffer[READ_SIZE];
-
 #define BUF_SUZE 16
+// Buffer for a typed command.
 static char command_buff[BUF_SUZE];
-int num = 0;
+// command_buff index pointer.
+static int num = 0;
+
+// Special struct that holds USB data.
+usb_data_t* usb_data;
 
 static void ev_handler(app_usbd_class_inst_t const *p_inst,
                        app_usbd_cdc_acm_user_event_t event);
@@ -18,11 +23,13 @@ APP_USBD_CDC_ACM_GLOBAL_DEF(usb_cdc_acm,
                             CDC_ACM_DATA_EPOUT,
                             APP_USBD_CDC_COMM_PROTOCOL_AT_V250);
 
+// Prints string message to the port.
 static ret_code_t print_usb_message(const char *msg)
 {
     return app_usbd_cdc_acm_write(&usb_cdc_acm, msg, strlen(msg));
 }
 
+// Parses string to <count> numbers.
 static bool parse_code(char *word, int *arr, int count)
 {
     int i = 0;
@@ -41,7 +48,7 @@ static bool parse_code(char *word, int *arr, int count)
     return i == count;
 }
 
-
+// Processes color command to print certain values.
 static ret_code_t process_color_command(command_type_t command)
 {
     int *nums;
@@ -88,6 +95,9 @@ static ret_code_t process_color_command(command_type_t command)
             return print_usb_message("\r\nBlue color code is invalid.\r\n");
         }
         snprintf(buff, 64, "\r\nRGB color set to R: %d, G: %d, B: %d.\r\n", nums[0], nums[1], nums[2]);
+        usb_data->field1 = nums[0];
+        usb_data->field2 = nums[1];
+        usb_data->field3 = nums[2];
         break;
 
     case USB_COM_HSV:
@@ -108,14 +118,17 @@ static ret_code_t process_color_command(command_type_t command)
             return print_usb_message("\r\nBrightness is invalid.\r\n");
         }
         snprintf(buff, 64, "\r\nHSV color set to H: %d, S: %d, V: %d.\r\n", nums[0], nums[1], nums[2]);
+        usb_data->field1 = nums[0];
+        usb_data->field2 = nums[1];
+        usb_data->field3 = nums[2];
         break;
     }
+    usb_data->usb_color_command = command;
     free(nums);
     return print_usb_message(buff);
-    return print_usb_message("\r\nSomething has gone wrong.\r\n");
 }
 
-
+// USB event handler.
 static void ev_handler(app_usbd_class_inst_t const *p_inst,
                        app_usbd_cdc_acm_user_event_t event)
 {
@@ -128,15 +141,6 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
         UNUSED_VARIABLE(ret);
         break;
     }
-        /* case APP_USBD_CDC_ACM_USER_EVT_PORT_CLOSE:
-         {
-             break;
-         }*/
-    /*case APP_USBD_CDC_ACM_USER_EVT_TX_DONE:
-    {
-        // NRF_LOG_INFO("[TX] done");
-        break;
-    }*/
     case APP_USBD_CDC_ACM_USER_EVT_RX_DONE:
     {
         ret_code_t ret;
@@ -167,7 +171,7 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
                 else
                 {
                     NRF_LOG_INFO("[USB RX] Typed Enter. Unknown sequence.");
-                    ret = print_usb_message("\r\nUnknown command. Type \"help\" for list of available commands.\r\n");
+                    ret = print_usb_message("\r\nUnknown command. Type \"help\" to list available commands.\r\n");
                 }
                 num = 0;
             }
@@ -183,8 +187,6 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
                         command_buff[num++] = '\0';
                 }
             }
-
-            /* Fetch data until internal buffer is empty */
             ret = app_usbd_cdc_acm_read(&usb_cdc_acm,
                                         m_rx_buffer,
                                         READ_SIZE);
@@ -197,9 +199,11 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
     }
 }
 
-void usb_init()
+
+void usb_init(usb_data_t *usbd)
 {
     logs_init();
+    usb_data = usbd;
     NRF_LOG_INFO("Starting up the test project with USB logging");
     app_usbd_class_inst_t const *class_cdc_acm = app_usbd_cdc_acm_class_inst_get(&usb_cdc_acm);
     ret_code_t ret = app_usbd_class_append(class_cdc_acm);
