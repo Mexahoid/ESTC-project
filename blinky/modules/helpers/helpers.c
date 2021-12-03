@@ -19,7 +19,7 @@ int helper_clamp(int input, int min, int max)
     return input;
 }
 
-void helper_increment_circular(int* const input, int* const incr, int min, int max)
+void helper_increment_circular(int32_t* const input, int32_t* const incr, int min, int max)
 {
     *input += *incr;
     if (*input >= max || *input <= min)

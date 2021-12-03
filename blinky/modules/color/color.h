@@ -6,23 +6,23 @@
 
 // HSV color 360-100-100.
 typedef struct {
-    int h;
-    int s;
-    int v;
+    int32_t h;
+    int32_t s;
+    int32_t v;
 } color_hsv_t;
 
 // PWM color 100-100-100.
 typedef struct {
-    int r;
-    int g;
-    int b;
+    int32_t r;
+    int32_t g;
+    int32_t b;
 } color_pwm_t;
 
 // RGB color 255-255-255.
 typedef struct {
-    int r;
-    int g;
-    int b;
+    int32_t r;
+    int32_t g;
+    int32_t b;
 } color_rgb_t;
 
 // Color modes.

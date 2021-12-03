@@ -1,6 +1,8 @@
 #ifndef MY_MODULE_HELPER
 #define MY_MODULE_HELPER
 
+#include <stdint.h>
+
 // Returns min of two numbers.
 int helper_min(int a, int b);
 
@@ -11,6 +13,6 @@ int helper_max(int a, int b);
 int helper_clamp(int input, int min, int max);
 
 // Makes increment circular (it goes to max, then to min and again to max ad infinitum).
-void helper_increment_circular(int* const input, int* const incr, int min, int max);
+void helper_increment_circular(int32_t* const input, int32_t* const incr, int min, int max);
 
 #endif

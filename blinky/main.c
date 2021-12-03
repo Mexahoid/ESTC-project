@@ -140,10 +140,7 @@ int main(void)
     usb_data.field1 = color.r;
     usb_data.field2 = color.g;
     usb_data.field3 = color.b;
-    usb_data_old.usb_color_command = usb_data.usb_color_command;
-    usb_data_old.field1 = usb_data.field1;
-    usb_data_old.field2 = usb_data.field2;
-    usb_data_old.field3 = usb_data.field3;
+    memcpy(&usb_data_old, &usb_data, sizeof(usb_data_t));
 #endif
 
     char sflag = 0;
@@ -153,15 +150,9 @@ int main(void)
 
 #ifdef USB
         usb_process();
-        if (usb_data_old.usb_color_command != usb_data.usb_color_command ||
-            usb_data_old.field1 != usb_data.field1 ||
-            usb_data_old.field2 != usb_data.field2 ||
-            usb_data_old.field3 != usb_data.field3)
+        if (memcmp(&usb_data_old, &usb_data, sizeof(usb_data_t)) != 0)
         {
-            usb_data_old.usb_color_command = usb_data.usb_color_command;
-            usb_data_old.field1 = usb_data.field1;
-            usb_data_old.field2 = usb_data.field2;
-            usb_data_old.field3 = usb_data.field3;
+            memcpy(&usb_data_old, &usb_data, sizeof(usb_data_t));
             color_hsv_t hsv;
 
             switch (usb_data.usb_color_command)

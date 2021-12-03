@@ -9,8 +9,6 @@
 
 #include <string.h>
 
-
-
 /* Make sure that they don't intersect with LOG_BACKEND_USB_CDC_ACM */
 #define CDC_ACM_COMM_INTERFACE  2
 #define CDC_ACM_COMM_EPIN       NRF_DRV_USBD_EPIN3
@@ -31,14 +29,14 @@ typedef enum
 // Structure holding USB input data.
 typedef struct
 {
+    // First value;
+    int32_t field1;
+    // Second value;
+    int32_t field2;
+    // Third value;
+    int32_t field3;
     // USB color mode.
     command_type_t usb_color_command;
-    // First value;
-    int field1;
-    // Second value;
-    int field2;
-    // Third value;
-    int field3;
 } usb_data_t;
 
 // Inits USB module. Need to pass usb_data_t pointer.
@@ -46,6 +44,5 @@ void usb_init(usb_data_t *usbd);
 
 // Processes USB, need to be executed all the time.
 void usb_process();
-
 
 #endif
