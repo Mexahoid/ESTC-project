@@ -15,6 +15,9 @@
 // Offset for word addresses.
 #define FLASH_ADDR_STEP 0x4
 
+// Defines Hamming code.
+#define HAMMING
+
 // 32 bits, dirst 3 bits are mark bits, other 29 are Hamming code.
 #define FLASH_R0_MASK 0b00010101010101010101010101010101
 #define FLASH_R1_MASK 0b00001100110011001100110011001100
@@ -25,6 +28,7 @@
 // Current address in a memory.
 static uint32_t curr_addr;
 
+#ifdef HAMMING
 // Returns parity bit of a 32bit word.
 static int count_bits_word(uint32_t word)
 {
@@ -33,11 +37,13 @@ static int count_bits_word(uint32_t word)
         res += (word >> i) & 1;
     return res % 2;
 }
+#endif
 
 // Makes Hamming code for a word.
 static uint32_t prepare_word(uint8_t a, uint8_t b, uint8_t c)
 {
     uint32_t res = 0;
+#ifdef HAMMING
     // first 3 bits are 000
     //r0 r1
     res <<= 1; // x0
@@ -61,10 +67,19 @@ static uint32_t prepare_word(uint8_t a, uint8_t b, uint8_t c)
     res |= count_bits_word(res & FLASH_R2_MASK) << 25;
     res |= count_bits_word(res & FLASH_R3_MASK) << 21;
     res |= count_bits_word(res & FLASH_R4_MASK) << 13;
+#endif
 
+#ifndef HAMMING
+    res += a;
+    res <<= 8;
+    res += b;
+    res <<= 8;
+    res += c;
+#endif
     return res;
 }
 
+#ifdef HAMMING
 // Checks if there any bit errors in a word.
 static int check_word(uint32_t word)
 {
@@ -95,6 +110,8 @@ static void fix_word(uint32_t *word, int err)
         *word &= mask;
     }
 }
+#endif
+
 
 // Reads word from ROM.
 static uint32_t get_word(uint32_t addr)
@@ -116,6 +133,7 @@ static void parse_word(uint32_t word, flash_word_t *data)
 {
     uint32_t x = word;
 
+#ifdef HAMMING
     int errors = check_word(word);
     fix_word(&word, errors);
 
@@ -134,7 +152,13 @@ static void parse_word(uint32_t word, flash_word_t *data)
     r += (x & 0b111) << 4;
     x >>= 1;
     r += (x & 0b1) << 7;
+#endif
+#ifndef HAMMING
+    uint8_t b = x & 0b11111111;
+    uint8_t g = (x >> 8) & 0b11111111;
+    uint8_t r = (x >> 16) & 0b11111111;
 
+#endif
     data->first_byte = r;
     data->second_byte = g;
     data->third_byte = b;
@@ -172,7 +196,7 @@ static uint32_t find_on_page(uint32_t start_addr, uint32_t stop_addr)
 void reinit_first_page()
 {
     uint32_t word = FLASH_MARK_WORD;
-    erase_page(FLASH_PAGE1_MIN_ADDR);
+    erase_page(FLASH_START_ADDR);
     curr_addr = FLASH_START_ADDR;
     set_word(word);
     curr_addr = FLASH_PAGE1_MIN_ADDR;
@@ -198,6 +222,10 @@ void memory_init()
 
 bool flash_init()
 {
+    /*erase_page(FLASH_PAGE1_MIN_ADDR);
+    erase_page(FLASH_PAGE2_MIN_ADDR);
+    return false;*/
+
     memory_init();
     // Start from first page
     curr_addr = FLASH_PAGE1_MIN_ADDR;
