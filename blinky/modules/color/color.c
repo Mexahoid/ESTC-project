@@ -144,9 +144,9 @@ static void convert_hsv_rgb(color_hsv_t* const hsv, color_rgb_t* const rgb)
 void color_init(color_hsv_t* const state)
 {
     mode = COLOR_MODE_OFF;
-    int hue;
-    int sat;
-    int bri;
+    int32_t hue = 0;
+    int32_t sat = 0;
+    int32_t bri = 0;
     if (state == NULL)
     {
         hue = helper_clamp(COLOR_DEFAULT_HUE, 0, 360);
@@ -155,6 +155,10 @@ void color_init(color_hsv_t* const state)
     }
     else
     {
+        //hue = 0;
+        //sat = 0;
+        //bri = 100;
+
         hue = helper_clamp(state->h, 0, 360);
         sat = helper_clamp(state->s, 0, 100);
         bri = helper_clamp(state->v, 0, 100);
