@@ -15,7 +15,8 @@
 // Offset for word addresses.
 #define FLASH_ADDR_STEP 0x4
 
-//#define HAMMING
+// Defines Hamming code.
+#define HAMMING
 
 // 32 bits, dirst 3 bits are mark bits, other 29 are Hamming code.
 #define FLASH_R0_MASK 0b00010101010101010101010101010101

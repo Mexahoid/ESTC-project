@@ -49,7 +49,7 @@
 #include "helpers.h"
 
 // Enables logging in main.
- #define MAIN_LOG
+// #define MAIN_LOG
 #ifdef MAIN_LOG
 #include "nrf_log.h"
 #include "nrf_log_backend_usb.h"
@@ -90,6 +90,7 @@ int main(void)
     int a = 0, b = 0, c = 0;
     int j = 0, k = 0, l = 0;
     int z = 0, x = 0, y = 0;
+    int a1 = 0, a2 = 0, a3 = 0;
 
 #endif
 
@@ -114,10 +115,6 @@ int main(void)
         saved_rgb.g = helper_clamp(saved_rgb.g, 0, 255);
         saved_rgb.b = helper_clamp(saved_rgb.b, 0, 255);
 
-        /*saved_rgb.r = 255;
-        saved_rgb.g = 255;
-        saved_rgb.b = 255;*/
-
         color_hsv_t hsv;
         color_convert_rgb_hsv(&saved_rgb, &hsv);
 
@@ -131,6 +128,12 @@ int main(void)
         z = test_rgb.r;
         x = test_rgb.g;
         y = test_rgb.b;
+        color_pwm_t test_rg2b;
+        color_get_current_pwm_percentages(&test_rg2b);
+        a1 = test_rg2b.r;
+        a2 = test_rg2b.g;
+        a3 = test_rg2b.b;
+
 #endif
     }
 
@@ -181,6 +184,8 @@ int main(void)
         NRF_LOG_INFO("INITED: R: %d, G: %d, B: %d.", a, b, c);
         NRF_LOG_PROCESS();
         NRF_LOG_INFO("HSV: %d %d %d. GOT FROM COLOR: %d %d %d", j, k, l, z, x, y);
+        NRF_LOG_PROCESS();
+        NRF_LOG_INFO("PWMS: R: %d, G: %d, B: %d.", a1, a2, a3);
         NRF_LOG_PROCESS();
 #endif
             memcpy(&usb_data_old, &usb_data, sizeof(usb_data_t));

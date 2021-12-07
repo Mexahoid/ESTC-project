@@ -120,9 +120,9 @@ static void convert_hsv_pwm(color_hsv_t* const hsv, color_pwm_t* const pwm)
         break;
     }
 
-    pwm->r = (int)r;
-    pwm->g = (int)g;
-    pwm->b = (int)b;
+    pwm->r = (int32_t)r;
+    pwm->g = (int32_t)g;
+    pwm->b = (int32_t)b;
 }
 
 // Converts PWM model to RGB model.
@@ -155,18 +155,15 @@ void color_init(color_hsv_t* const state)
     }
     else
     {
-        //hue = 0;
-        //sat = 0;
-        //bri = 100;
-
         hue = helper_clamp(state->h, 0, 360);
         sat = helper_clamp(state->s, 0, 100);
         bri = helper_clamp(state->v, 0, 100);
     }
 
     current.h = hue;
-    current.s = bri;
-    current.v = sat;
+    current.s = sat;
+    current.v = bri;
+
     current_incdec.h = 1;
     current_incdec.s = current.s >= 100 ? -1 : 1;
     current_incdec.v = current.v >= 100 ? -1 : 1;
