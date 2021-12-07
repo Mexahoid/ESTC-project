@@ -8,6 +8,8 @@ static char command_buff[BUF_SUZE];
 // command_buff index pointer.
 static int num = 0;
 
+static void (*get_rgb)(color_rgb_t*);
+
 // Special struct that holds USB data.
 usb_data_t* usb_data;
 
@@ -54,6 +56,8 @@ static ret_code_t process_color_command(command_type_t command)
     int *nums;
     int count;
     bool ok;
+
+    char buff[64];
     switch (command)
     {
     case USB_COM_RGB:
@@ -64,6 +68,13 @@ static ret_code_t process_color_command(command_type_t command)
         NRF_LOG_INFO("[USB RX] HSV sequence found.");
         count = 3;
         break;
+    case USB_COM_GET_RGB:
+        NRF_LOG_INFO("[USB RX] Requested RGB.");
+        color_rgb_t clr;
+        get_rgb(&clr);
+        NRF_LOG_INFO("[USB RX] Current RGB. R: %ld, G: %ld, B: %ld.", clr.r, clr.g, clr.b);
+        snprintf(buff, 64, "\r\nRGB current: R: %ld, G: %ld, B: %ld.\r\n", clr.r, clr.g, clr.b);
+        return print_usb_message(buff);
     }
     nums = (int *)malloc(count * sizeof(int));
     ok = parse_code(command_buff, nums, count);
@@ -74,7 +85,6 @@ static ret_code_t process_color_command(command_type_t command)
         return print_usb_message("\r\nWrong color sequence.\r\n");
     }
 
-    char buff[64];
     switch (command)
     {
     case USB_COM_RGB:
@@ -122,6 +132,9 @@ static ret_code_t process_color_command(command_type_t command)
         usb_data->field2 = nums[1];
         usb_data->field3 = nums[2];
         break;
+
+    default:
+    break;
     }
     usb_data->usb_color_command = command;
     free(nums);
@@ -154,6 +167,10 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
                     command_buff[num] = '\0';
                 }
 
+                if (strncmp(command_buff, "CURR", 4) == 0)
+                {
+                    ret = process_color_command(USB_COM_GET_RGB);
+                } else
                 if (strncmp(command_buff, "RGB", 3) == 0)
                 {
                     ret = process_color_command(USB_COM_RGB);
@@ -166,7 +183,8 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
                 {
                     NRF_LOG_INFO("[USB RX] Typed \"help\"");
                     ret = print_usb_message("\r\nChange RGB by typing:\r\nRGB <rrr> <ggg> <bbb>\r\nColor codes (rrr, ggg, bbb) should be between 0 and 255.\r\n\
-                    \r\nChange HSV by typing:\r\nHSV <hhh> <sss> <vvv>\r\nColor code hhh should be between 0 and 360, sss and vvv - between 0 and 100.\r\n");
+                    \r\nChange HSV by typing:\r\nHSV <hhh> <sss> <vvv>\r\nColor code hhh should be between 0 and 360, sss and vvv - between 0 and 100.\r\n\
+                    \r\nGet current RGB color by typing:\r\nCURR\r\n");
                 }
                 else
                 {
@@ -200,9 +218,10 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
 }
 
 
-void usb_init(usb_data_t *usbd)
+void usb_init(usb_data_t *usbd, void (*action)(color_rgb_t*))
 {
     logs_init();
+    get_rgb = action;
     usb_data = usbd;
     NRF_LOG_INFO("Starting up the test project with USB logging");
     app_usbd_class_inst_t const *class_cdc_acm = app_usbd_cdc_acm_class_inst_get(&usb_cdc_acm);

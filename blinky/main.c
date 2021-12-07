@@ -79,7 +79,7 @@ int main(void)
 #ifdef USB
     usb_data_t usb_data;
     usb_data_t usb_data_old;
-    usb_init(&usb_data);
+    usb_init(&usb_data, &color_get_current_rgb);
 #endif
 
 #ifdef MAIN_LOG
@@ -171,6 +171,8 @@ int main(void)
                 hsv.v = usb_data.field3;
                 color_set_hsv(&hsv);
                 break;
+            default:
+            break;
             }
             color_get_current_rgb(&saved_rgb);
             data.first_byte = (uint8_t)(saved_rgb.r);

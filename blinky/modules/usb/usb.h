@@ -9,6 +9,8 @@
 
 #include <string.h>
 
+#include "color.h"
+
 /* Make sure that they don't intersect with LOG_BACKEND_USB_CDC_ACM */
 #define CDC_ACM_COMM_INTERFACE  2
 #define CDC_ACM_COMM_EPIN       NRF_DRV_USBD_EPIN3
@@ -23,7 +25,9 @@ typedef enum
     // If there was RGB command.
     USB_COM_RGB,
     // If there was HSV command.
-    USB_COM_HSV
+    USB_COM_HSV,
+
+    USB_COM_GET_RGB
 } command_type_t;
 
 // Structure holding USB input data.
@@ -40,7 +44,7 @@ typedef struct
 } usb_data_t;
 
 // Inits USB module. Need to pass usb_data_t pointer.
-void usb_init(usb_data_t *usbd);
+void usb_init(usb_data_t *usbd, void (*action)(color_rgb_t*));
 
 // Processes USB, need to be executed all the time.
 void usb_process();
