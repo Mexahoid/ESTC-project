@@ -222,7 +222,7 @@ int main(void)
 
 
 #ifdef MAIN_LOG
-        logs_log_process();
+        logs_process();
 #endif
         pwm_set_percentage(&pwm_context_led2_red, color.r);
         pwm_set_percentage(&pwm_context_led2_green, color.g);

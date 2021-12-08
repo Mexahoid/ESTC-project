@@ -233,6 +233,6 @@ void usb_process()
 {
     if (!app_usbd_event_queue_process())
     {
-        logs_log_process();
+        logs_process();
     }
 }
