@@ -53,7 +53,6 @@ static bool parse_code(char *word, int *arr, int count)
 // Processes color command to print certain values.
 static ret_code_t process_color_command(command_type_t command)
 {
-    int *nums;
     int count;
     bool ok;
 
@@ -76,7 +75,7 @@ static ret_code_t process_color_command(command_type_t command)
         snprintf(buff, 64, "\r\nRGB current: R: %ld, G: %ld, B: %ld.\r\n", clr.r, clr.g, clr.b);
         return print_usb_message(buff);
     }
-    nums = (int *)malloc(count * sizeof(int));
+    int nums[count];
     ok = parse_code(command_buff, nums, count);
 
     if (!ok)
@@ -137,7 +136,6 @@ static ret_code_t process_color_command(command_type_t command)
     break;
     }
     usb_data->usb_color_command = command;
-    free(nums);
     return print_usb_message(buff);
 }
 
