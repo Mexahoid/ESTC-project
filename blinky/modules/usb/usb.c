@@ -5,9 +5,11 @@ static char m_rx_buffer[READ_SIZE];
 #define BUF_SUZE 24
 // Buffer for a typed command.
 static char command_buff[BUF_SUZE];
+#define USBC_BUFF_MESSAGE_SIZE 512
 // command_buff index pointer.
 static int num = 0;
 
+static void (*parse_command)(char*, char*);
 
 
 static void ev_handler(app_usbd_class_inst_t const *p_inst,
@@ -33,7 +35,7 @@ static ret_code_t process_color_command()
 {
     char res[USBC_BUFF_MESSAGE_SIZE];
     memset(res, 0, ARRAY_SIZE(res));
-    usbc_process_command(res, command_buff);
+    parse_command(res, command_buff);
     return print_usb_message(res);
 }
 
@@ -95,11 +97,10 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
 }
 
 
-void usb_init(usb_data_t *usbd, void (*action)(color_rgb_t*))
+void usb_init(void (*action)(char*, char*))
 {
     logs_init();
-    usbc_init(usbd, action);
-    NRF_LOG_INFO("Starting up the test project with USB logging");
+    parse_command = action;
     app_usbd_class_inst_t const *class_cdc_acm = app_usbd_cdc_acm_class_inst_get(&usb_cdc_acm);
     ret_code_t ret = app_usbd_class_append(class_cdc_acm);
     APP_ERROR_CHECK(ret);

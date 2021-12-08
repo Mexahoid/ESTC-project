@@ -1,11 +1,6 @@
 #ifndef MY_MODULE_USB
 #define MY_MODULE_USB
 
-#include <string.h>
-
-#include "color.h"
-#include "usb_commands.h"
-
 #include "log.h"
 
 #include "app_usbd.h"
@@ -22,10 +17,8 @@
 #define CDC_ACM_DATA_EPOUT      NRF_DRV_USBD_EPOUT4
 
 
-
-
 // Inits USB module. Need to pass usb_data_t pointer.
-void usb_init(usb_data_t *usbd, void (*action)(color_rgb_t*));
+void usb_init(void (*action)(char*, char*));
 
 // Processes USB, need to be executed all the time.
 void usb_process();

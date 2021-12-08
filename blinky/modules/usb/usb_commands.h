@@ -11,8 +11,6 @@
 #include "log.h"
 #include "color.h"
 
-// Message between submodules size.
-#define USBC_BUFF_MESSAGE_SIZE 512
 
 // USB module command types.
 typedef enum

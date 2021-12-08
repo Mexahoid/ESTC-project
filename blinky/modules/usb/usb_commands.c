@@ -1,8 +1,11 @@
 #include "usb_commands.h"
 
+// Delegate that gets current RGB from RGB module.
 static void (*get_rgb)(color_rgb_t*);
 // Special struct that holds USB data.
 usb_data_t* usb_data;
+// Message between submodules size.
+#define USBC_BUFF_MESSAGE_SIZE 512
 
 // Parses string to <count> numbers.
 bool parse_code(char *word, int *arr, int count)
@@ -53,8 +56,8 @@ static void process_other_command(char* text_buff, usb_command_t command)
     case USB_COM_HELP:
         NRF_LOG_INFO("[USB RX] HELP requested.");
         snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n==Commands==\r\nRGB <rrr> <ggg> <bbb>\r\n- Changes RGB. Color codes (rrr, ggg, bbb) should be between 0 and 255.\
-                \r\n>HSV <hhh> <sss> <vvv>\r\n- Changes HSV. Color code hhh should be between 0 and 360, sss and vvv - between 0 and 100.\
-                \r\n>CURR\r\n- Gets current RGB color.\r\n==End==\r\n");
+                \r\nHSV <hhh> <sss> <vvv>\r\n- Changes HSV. Color code hhh should be between 0 and 360, sss and vvv - between 0 and 100.\
+                \r\nCURR\r\n- Gets current RGB color.\r\n==End==\r\n");
         return;
 
     case USB_COM_UNKNOWN:
