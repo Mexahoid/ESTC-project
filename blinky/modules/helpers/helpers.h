@@ -2,6 +2,7 @@
 #define MY_MODULE_HELPER
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // Returns min of two numbers.
 int helper_min(int a, int b);
@@ -14,5 +15,8 @@ int helper_clamp(int input, int min, int max);
 
 // Makes increment circular (it goes to max, then to min and again to max ad infinitum).
 void helper_increment_circular(int32_t* const input, int32_t* const incr, int min, int max);
+
+// Checks whether value is between min amd max.
+bool helper_is_inbetween(int input, int min, int max);
 
 #endif

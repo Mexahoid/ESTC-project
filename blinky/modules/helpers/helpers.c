@@ -18,6 +18,11 @@ int helper_clamp(int input, int min, int max)
     return input;
 }
 
+bool helper_is_inbetween(int input, int min, int max)
+{
+    return input >= min && input <= max;
+}
+
 void helper_increment_circular(int32_t* const input, int32_t* const incr, int min, int max)
 {
     *input += *incr;
