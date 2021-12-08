@@ -73,6 +73,7 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/hal/nrf_nvmc.c \
   $(PROJ_DIR)/modules/flash/flash.c \
   $(PROJ_DIR)/modules/usb/usb.c \
+  $(PROJ_DIR)/modules/usb/usb_commands.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \

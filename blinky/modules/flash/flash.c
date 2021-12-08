@@ -112,7 +112,6 @@ static void fix_word(uint32_t *word, int err)
 }
 #endif
 
-
 // Reads word from ROM.
 static uint32_t get_word(uint32_t addr)
 {

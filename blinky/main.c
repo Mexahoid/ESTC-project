@@ -62,6 +62,7 @@
 #define USB
 #ifdef USB
 #include "usb.h"
+#include "usb_commands.h"
 #endif
 
 // Delegate for PWM methods.
@@ -79,7 +80,8 @@ int main(void)
 #ifdef USB
     usb_data_t usb_data;
     usb_data_t usb_data_old;
-    usb_init(&usb_data, &color_get_current_rgb);
+    usb_init(&usbc_process_command);
+    usbc_init(&usb_data, &color_get_current_rgb);
 #endif
 
 #ifdef MAIN_LOG
@@ -222,7 +224,7 @@ int main(void)
 
 
 #ifdef MAIN_LOG
-        logs_log_process();
+        logs_process();
 #endif
         pwm_set_percentage(&pwm_context_led2_red, color.r);
         pwm_set_percentage(&pwm_context_led2_green, color.g);
