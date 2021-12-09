@@ -74,6 +74,7 @@ SRC_FILES += \
   $(PROJ_DIR)/modules/flash/flash.c \
   $(PROJ_DIR)/modules/usb/usb.c \
   $(PROJ_DIR)/modules/usb/usb_commands.c \
+  $(PROJ_DIR)/modules/usb/usb_commands_color_utils.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \

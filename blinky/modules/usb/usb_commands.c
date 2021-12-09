@@ -1,4 +1,5 @@
 #include "usb_commands.h"
+#include "usb_commands_color_utils.h"
 
 // Delegate that gets current RGB from RGB module.
 static void (*get_rgb)(color_rgb_t*);
@@ -204,7 +205,7 @@ static void handler_hsv(char* text_buff, char *args)
     usb_data->field1 = nums[0];
     usb_data->field2 = nums[1];
     usb_data->field3 = nums[2];
-    usb_data->usb_color_command = USB_COM_RGB;
+    usb_data->usb_color_command = USB_COM_HSV;
 }
 
 static void handler_get(char* text_buff, char *args)
