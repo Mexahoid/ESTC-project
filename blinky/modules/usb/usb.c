@@ -2,13 +2,13 @@
 
 #define READ_SIZE 1
 static char m_rx_buffer[READ_SIZE];
-#define BUF_SUZE 24
+#define BUF_SUZE 32
 // Buffer for a typed command.
 static char command_buff[BUF_SUZE];
-#define USBC_BUFF_MESSAGE_SIZE 512
-// command_buff index pointer.
+#define USBC_BUFF_MESSAGE_SIZE 1024
+// Command_buff index pointer.
 static int num = 0;
-
+// Command parser.
 static void (*parse_command)(char*, char*);
 
 

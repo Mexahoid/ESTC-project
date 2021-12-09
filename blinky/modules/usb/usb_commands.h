@@ -24,7 +24,18 @@ typedef enum
     // Wrong command.
     USB_COM_UNKNOWN,
     // If there was HELP command.
-    USB_COM_HELP
+    USB_COM_HELP,
+    // If there was ADDRGB command.
+    USB_COM_ADD_RGB,
+    // If there was ADDCURR command.
+    USB_COM_ADD_CURR,
+    // If there was DEL command.
+    USB_COM_DEL,
+    // If there was SET command.
+    USB_COM_SET,
+    // If there was LIST command.
+    USB_COM_LIST
+
 } usb_command_t;
 
 // Structure holding USB input data.
