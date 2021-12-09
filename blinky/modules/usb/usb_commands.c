@@ -186,13 +186,13 @@ static void handler_hsv(char* text_buff, char *args)
         snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Hue is invalid.\r\n");
         return;
     }
-    if (!helper_is_inbetween(nums[0], 0, 100))
+    if (!helper_is_inbetween(nums[1], 0, 100))
     {
         NRF_LOG_INFO("[USB RX] Sat invalid.");
         snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Saturation is invalid.\r\n");
         return;
     }
-    if (!helper_is_inbetween(nums[0], 0, 100))
+    if (!helper_is_inbetween(nums[2], 0, 100))
     {
         NRF_LOG_INFO("[USB RX] Bri invalid.");
         snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Brightness is invalid.\r\n");
