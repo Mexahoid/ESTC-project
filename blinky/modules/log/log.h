@@ -7,10 +7,16 @@
 
 #include "nrf_log_backend_usb.h"
 
-// Initialize method.
+/**
+ * @brief Initialize method.
+ *
+ */
 void logs_init();
 
-// Just an empty action (it doesn't work without it).
+/**
+ * @brief Just an empty action (it doesn't work without it).
+ *
+ */
 void logs_process();
 
 

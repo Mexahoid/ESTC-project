@@ -5,7 +5,6 @@ static char m_rx_buffer[READ_SIZE];
 #define BUF_SUZE 32
 // Buffer for a typed command.
 static char command_buff[BUF_SUZE];
-#define USBC_BUFF_MESSAGE_SIZE 1024
 // Command_buff index pointer.
 static int num = 0;
 // Command parser.
@@ -33,7 +32,7 @@ static ret_code_t print_usb_message(const char *msg)
 // Processes color command to print certain values.
 static ret_code_t process_color_command()
 {
-    char res[USBC_BUFF_MESSAGE_SIZE];
+    char res[USB_BUFF_MESSAGE_SIZE];
     memset(res, 0, ARRAY_SIZE(res));
     parse_command(res, command_buff);
     return print_usb_message(res);

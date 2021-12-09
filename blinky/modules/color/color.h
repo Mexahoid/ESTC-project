@@ -39,31 +39,66 @@ typedef enum {
     COLOR_MODE_LAST = COLOR_MODE_BRI
 } color_mode_t;
 
-// Converts HSV model color to PWM model.
+/**
+ * @brief Converts HSV model color to PWM model.
+ *
+ * @param color                     PWM color model
+ */
 void color_get_current_pwm_percentages(color_pwm_t* const color);
 
-// Changes mode NOP - HUE - SAT - BRI - NOP.
+/**
+ * @brief Changes mode NOP - HUE - SAT - BRI - NOP.
+ *
+ */
 void color_change_mode();
 
-// Changes value based on current mode.
+/**
+ * @brief Changes value based on current mode.
+ *
+ */
 void color_increase_mode_value();
 
-// Returns current color mode.
+/**
+ * @brief Returns current color mode.
+ *
+ * @return color_mode_t
+ */
 color_mode_t color_get_mode();
 
-// Returns current RGB model color.
+/**
+ * @brief Returns current RGB model color.
+ *
+ * @param color                 RGB color model
+ */
 void color_get_current_rgb(color_rgb_t* const color);
 
-// Converts RGB to HSV.
+/**
+ * @brief Converts RGB to HSV.
+ *
+ * @param rgb                   Input RGB color model
+ * @param hsv                   Output HSV color model
+ */
 void color_convert_rgb_hsv(color_rgb_t* const rgb, color_hsv_t* const hsv);
 
-// Initializes color module.
+/**
+ * @brief Initializes color module.
+ *
+ * @param state                 Initial HSV color model state
+ */
 void color_init(color_hsv_t* const state);
 
-// Sets current RGB color.
+/**
+ * @brief Sets current RGB color.
+ *
+ * @param rgb                   Input RGB color model
+ */
 void color_set_rgb(color_rgb_t* const rgb);
 
-// Sets current HSV color.
+/**
+ * @brief Sets current HSV color.
+ *
+ * @param hsv                   Input HSV color model
+ */
 void color_set_hsv(color_hsv_t* const hsv);
 
 #endif

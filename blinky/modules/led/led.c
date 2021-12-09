@@ -3,7 +3,11 @@
 // Array with LED themselves.
 static led_t leds[] = {LED1_GREEN, LED2_RED, LED2_GREEN, LED2_BLUE};
 
-// Inits LED as a GPIO.
+/**
+ * @brief Inits LED as a GPIO.
+ *
+ * @param led               LED that being initialized
+ */
 static void led_init(led_t led)
 {
     nrf_gpio_cfg_output(led);

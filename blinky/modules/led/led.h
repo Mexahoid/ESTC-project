@@ -19,10 +19,18 @@ typedef enum
     LED_OFF = 1
 } led_state_t;
 
-// Changes LED state to ON or OFF.
+/**
+ * @brief Changes LED state to ON or OFF.
+ *
+ * @param led                   LED that changes state
+ * @param state                 State for the LED
+ */
 void led_change_state_to(led_t led, led_state_t state);
 
-// Inits all LEDs.
+/**
+ * @brief Inits all LEDs.
+ *
+ */
 void leds_init();
 
 

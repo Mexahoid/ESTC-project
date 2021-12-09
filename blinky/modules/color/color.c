@@ -21,7 +21,12 @@ static color_hsv_t current_incdec;
 // Timestamp for smooth changing.
 static nrfx_systick_state_t timestamp_pwm_us;
 
-// Converts RGB model to HSV model.
+/**
+ * @brief Converts RGB model to HSV model.
+ *
+ * @param rgb                   Input RGB color model
+ * @param hsv                   Output HSV color model
+ */
 void color_convert_rgb_hsv(color_rgb_t* const rgb, color_hsv_t* const hsv)
 {
     int r = rgb->r * 100 / 255;
@@ -70,7 +75,12 @@ void color_convert_rgb_hsv(color_rgb_t* const rgb, color_hsv_t* const hsv)
     }
 }
 
-// Converts HSV model to PWM model.
+/**
+ * @brief Converts HSV model to PWM model.
+ *
+ * @param hsv                   Input HSV color model
+ * @param pwm                   Output PWM color model
+ */
 static void convert_hsv_pwm(color_hsv_t* const hsv, color_pwm_t* const pwm)
 {
     int hi = (int)(hsv->h / 60) % 6;
@@ -125,7 +135,12 @@ static void convert_hsv_pwm(color_hsv_t* const hsv, color_pwm_t* const pwm)
     pwm->b = (int32_t)b;
 }
 
-// Converts PWM model to RGB model.
+/**
+ * @brief Converts PWM model to RGB model.
+ *
+ * @param pwm                   Input PWM color model
+ * @param rgb                   Output RGB color model
+ */
 static void convert_pwm_rgb(color_pwm_t* const pwm, color_rgb_t* const rgb)
 {
     rgb->r = pwm->r * 255 / 100;
@@ -133,7 +148,12 @@ static void convert_pwm_rgb(color_pwm_t* const pwm, color_rgb_t* const rgb)
     rgb->b = pwm->b * 255 / 100;
 }
 
-// Converts HSV model to RGB model.
+/**
+ * @brief Converts HSV model to RGB model.
+ *
+ * @param hsv                   Input HSV color model
+ * @param rgb                   Output RGB color model
+ */
 static void convert_hsv_rgb(color_hsv_t* const hsv, color_rgb_t* const rgb)
 {
     color_pwm_t pwm;

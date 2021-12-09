@@ -29,7 +29,12 @@
 static uint32_t curr_addr;
 
 #ifdef HAMMING
-// Returns parity bit of a 32bit word.
+/**
+ * @brief Returns parity bit of a 32bit word.
+ *
+ * @param word                  4 bytes word
+ * @return int
+ */
 static int count_bits_word(uint32_t word)
 {
     int res = 0;
@@ -39,7 +44,14 @@ static int count_bits_word(uint32_t word)
 }
 #endif
 
-// Makes Hamming code for a word.
+/**
+ * @brief Makes Hamming code for a word.
+ *
+ * @param a                     Second word byte
+ * @param b                     Third word byte
+ * @param c                     Fourth word byte
+ * @return uint32_t
+ */
 static uint32_t prepare_word(uint8_t a, uint8_t b, uint8_t c)
 {
     uint32_t res = 0;
@@ -80,7 +92,12 @@ static uint32_t prepare_word(uint8_t a, uint8_t b, uint8_t c)
 }
 
 #ifdef HAMMING
-// Checks if there any bit errors in a word.
+/**
+ * @brief Checks if there any bit errors in a word.
+ *
+ * @param word                  4 bytes word
+ * @return int
+ */
 static int check_word(uint32_t word)
 {
     int err = 0;
@@ -93,7 +110,12 @@ static int check_word(uint32_t word)
     return err;
 }
 
-// Fixes 1 error in a word.
+/**
+ * @brief Fixes 1 error in a word.
+ *
+ * @param word                  4 bytes word
+ * @param err                   Error position
+ */
 static void fix_word(uint32_t *word, int err)
 {
     if (err == 0)
@@ -112,7 +134,12 @@ static void fix_word(uint32_t *word, int err)
 }
 #endif
 
-// Reads word from ROM.
+/**
+ * @brief Reads word from ROM.
+ *
+ * @param addr                  Address in memory that should be read
+ * @return uint32_t
+ */
 static uint32_t get_word(uint32_t addr)
 {
     uint32_t *ptr = (uint32_t *)addr;
@@ -121,13 +148,22 @@ static uint32_t get_word(uint32_t addr)
     return value;
 }
 
-// Writes word to ROM.
+/**
+ * @brief Writes word to ROM.
+ *
+ * @param word                  4 bytes word
+ */
 static void set_word(uint32_t word)
 {
     nrf_nvmc_write_word((uint32_t)curr_addr, word);
 }
 
-// Parses word from Hamming code.
+/**
+ * @brief Parses word from Hamming code.
+ *
+ * @param word                  4 bytes word
+ * @param data                  4 different bytes
+ */
 static void parse_word(uint32_t word, flash_word_t *data)
 {
     uint32_t x = word;
@@ -163,19 +199,35 @@ static void parse_word(uint32_t word, flash_word_t *data)
     data->third_byte = b;
 }
 
-// Checks if it is data record or a 111..... record.
+/**
+ * @brief Checks if it is data record or a 111..... record.
+ *
+ * @param word                  4 bytes word
+ * @return true
+ * @return false
+ */
 static bool is_word_null(uint32_t word)
 {
     return (word & 0b11100000000000000000000000000000) != 0;
 }
 
-// Clears page.
+/**
+ * @brief Clears page.
+ *
+ * @param addr                  Address in memory that should be cleared
+ */
 static void erase_page(uint32_t addr)
 {
     nrf_nvmc_page_erase(addr);
 }
 
-// Finds 111... record on a page.
+/**
+ * @brief Finds 111... record on a page.
+ *
+ * @param start_addr            Start address for search
+ * @param stop_addr             Stop address for search
+ * @return uint32_t
+ */
 static uint32_t find_on_page(uint32_t start_addr, uint32_t stop_addr)
 {
     uint32_t word;
@@ -191,7 +243,10 @@ static uint32_t find_on_page(uint32_t start_addr, uint32_t stop_addr)
     return stop_addr;
 }
 
-// Clears 1st page and adds marking word.
+/**
+ * @brief Clears 1st page and adds marking word.
+ *
+ */
 void reinit_first_page()
 {
     uint32_t word = FLASH_MARK_WORD;
@@ -201,7 +256,10 @@ void reinit_first_page()
     curr_addr = FLASH_PAGE1_MIN_ADDR;
 }
 
-// Pre-inits memory.
+/**
+ * @brief Pre-inits memory.
+ *
+ */
 void memory_init()
 {
     uint32_t start_addr = FLASH_START_ADDR;

@@ -42,10 +42,17 @@ typedef enum
 } button_state_t;
 
 
-// Init interrupt for BUTTON1.
+/**
+ * @brief Init interrupt for BUTTON1.
+ *
+ */
 void button_interrupt_init();
 
-// Checks and writes to is_automatic whether the button was doubleclicked.
+/**
+ * @brief Checks and writes to is_automatic whether the button was doubleclicked.
+ *
+ * @return button_state_t
+ */
 button_state_t button_check_for_clicktype();
 
 #endif

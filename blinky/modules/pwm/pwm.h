@@ -32,16 +32,38 @@ typedef struct
     nrfx_systick_state_t pwm_timestamp_ms;
 } pwm_ctx_t;
 
-// Modulates GPIO with PWM.
+/**
+ * @brief Modulates GPIO with PWM.
+ *
+ * @param context               PWM context
+ */
 void pwm_modulate(pwm_ctx_t* const context);
 
-// Looks every PWM ms for a PWM percentage recalc.
+/**
+ * @brief Looks every PWM ms for a PWM percentage recalc.
+ *
+ * @param context               PWM context
+ */
 void pwm_percentage_recalc(pwm_ctx_t* const context);
 
-// Initializes PWM module.
+/**
+ * @brief Initializes PWM module.
+ *
+ * @param context               PWM context thet needs to be initialized
+ * @param action                Delegate for PWM action
+ * @param state_on              Defines ON state
+ * @param on_time               Sets ON time for PWM
+ * @param frequency             Sets PWM frequency
+ * @param gpio                  Sets context GPIO
+ */
 void pwm_init(pwm_ctx_t* const context, void (*action)(int, int), int state_on, int on_time, int frequency, int gpio);
 
-// Sets PWM percentage.
+/**
+ * @brief Sets PWM percentage.
+ *
+ * @param context               PWM context
+ * @param percentage            PWM percentage (duty cycle)
+ */
 void pwm_set_percentage(pwm_ctx_t* const context, int percentage);
 
 #endif

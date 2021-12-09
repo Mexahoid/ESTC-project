@@ -10,7 +10,13 @@
 // Was systic initialized or not.
 static bool is_systick_init = false;
 
-// Returns true if at least ms has passed.
+/**
+ * @brief Returns true if at least ms has passed.
+ *
+ * @param context                   PRM context
+ * @return true
+ * @return false
+ */
 static bool is_ms_passed(pwm_ctx_t* const context)
 {
     if (!nrfx_systick_test(&(context->pwm_timestamp_ms), PWM_MAX_MS_DELAY))
@@ -20,7 +26,11 @@ static bool is_ms_passed(pwm_ctx_t* const context)
     return true;
 }
 
-// Updates inner counter every PWM percent delay.
+/**
+ * @brief Updates inner counter every PWM percent delay.
+ *
+ * @param context                   PRM context
+ */
 static void tick_update(pwm_ctx_t* const context)
 {
     if (!nrfx_systick_test(&(context->pwm_timestamp_us), PWM_TICK_DELAY_US))

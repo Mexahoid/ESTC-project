@@ -65,10 +65,15 @@
 #include "usb_commands.h"
 #endif
 
-// Delegate for PWM methods.
-void gpio_action(int gpio, int state_on)
+/**
+ * @brief Delegate for PWM methods.
+ *
+ * @param gpio                  GPIO for PWM
+ * @param state                 State to change to
+ */
+void gpio_action(int gpio, int state)
 {
-    led_change_state_to(gpio, state_on);
+    led_change_state_to(gpio, state);
 }
 
 int main(void)
@@ -81,7 +86,7 @@ int main(void)
     usb_data_t usb_data;
     usb_data_t usb_data_old;
     usb_init(&usbc_process_command);
-    usbc_init(&usb_data, &color_get_current_rgb);
+    usbc_init(&usb_data, &color_get_current_rgb, USB_BUFF_MESSAGE_SIZE);
 #endif
 
 #ifdef MAIN_LOG

@@ -11,7 +11,12 @@ static volatile int counter_ms = 0;
 // Is button long pressed.
 static volatile bool is_long_pressed = false;
 
-// Interrupt handler.
+/**
+ * @brief Interrupt handler.
+ *
+ * @param pin                   Button pin
+ * @param action                Action for an interrupt
+ */
 static void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     UNUSED_VARIABLE(pin);

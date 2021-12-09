@@ -6,7 +6,7 @@ static void (*get_rgb)(color_rgb_t*);
 // Special struct that holds USB data.
 usb_data_t* usb_data;
 // Message between submodules size.
-#define USBC_BUFF_MESSAGE_SIZE 1024
+static int buff_msg_size = 1024;
 
 // Max symbols in name (not counting \0).
 #define MAX_NAME_LEN 8
@@ -86,7 +86,7 @@ static cmd_handler_t cmdhdls[] =
 };
 
 // Colors array.
-cmd_args_add_color_t colors_names[MAX_COLORS];
+static cmd_args_add_color_t colors_names[MAX_COLORS];
 
 // Strtoks string to an array of strings.
 static bool get_args(char *word, char **arr, int count)
@@ -114,41 +114,18 @@ static void handler_rgb(char* text_buff, char *args)
     if (!get_args(args, arr, count))
     {
         NRF_LOG_INFO("[USB RX] Wrong syntax: %s", args);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong color sequence.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Wrong color sequence.\r\n");
         return;
     }
-
 
     int nums[count];
-    for (int i = 0; i < count; i++)
-    {
-        if (sscanf(arr[i], "%d", &nums[i]) == 0)
-        {
-            NRF_LOG_INFO("[USB RX] Wrong data: %s", arr[i]);
-            snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong data passed: %s.\r\n", arr[i]);
-            return;
-        }
-    }
-    if (!helper_is_inbetween(nums[0], 0, 255))
-    {
-        NRF_LOG_INFO("[USB RX] Red invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Red color code is invalid.\r\n");
+    if (!usbccu_check_ints(arr, nums, count, text_buff))
         return;
-    }
-    if (!helper_is_inbetween(nums[1], 0, 255))
-    {
-        NRF_LOG_INFO("[USB RX] Green invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Green color code is invalid.\r\n");
+    if (!usbccu_check_rgb(nums, text_buff))
         return;
-    }
-    if (!helper_is_inbetween(nums[2], 0, 255))
-    {
-        NRF_LOG_INFO("[USB RX] Blue invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Blue color code is invalid.\r\n");
-        return;
-    }
+
     NRF_LOG_INFO("[USB RX] RGB color set to R: %d, G: %d, B: %d.", nums[0], nums[1], nums[2]);
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> RGB color set to R: %d, G: %d, B: %d.\r\n", nums[0], nums[1], nums[2]);
+    snprintf(text_buff, buff_msg_size, "\r\n>> RGB color set to R: %d, G: %d, B: %d.\r\n", nums[0], nums[1], nums[2]);
 
     usb_data->field1 = nums[0];
     usb_data->field2 = nums[1];
@@ -165,42 +142,15 @@ static void handler_hsv(char* text_buff, char *args)
     if (!get_args(args, arr, count))
     {
         NRF_LOG_INFO("[USB RX] Wrong syntax: %s", args);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong color sequence.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Wrong color sequence.\r\n");
         return;
     }
-
 
     int nums[count];
-    for (int i = 0; i < count; i++)
-    {
-        if (sscanf(arr[i], "%d", &nums[i]) == 0)
-        {
-            NRF_LOG_INFO("[USB RX] Wrong data: %s", arr[i]);
-            snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong data passed: %s.\r\n", arr[i]);
-            return;
-        }
-    }
-    if (!helper_is_inbetween(nums[0], 0, 360))
-    {
-        NRF_LOG_INFO("[USB RX] Hue invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Hue is invalid.\r\n");
+    if (!usbccu_check_ints(arr, nums, count, text_buff))
         return;
-    }
-    if (!helper_is_inbetween(nums[1], 0, 100))
-    {
-        NRF_LOG_INFO("[USB RX] Sat invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Saturation is invalid.\r\n");
+    if (!usbccu_check_hsv(nums, text_buff))
         return;
-    }
-    if (!helper_is_inbetween(nums[2], 0, 100))
-    {
-        NRF_LOG_INFO("[USB RX] Bri invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Brightness is invalid.\r\n");
-        return;
-    }
-
-    NRF_LOG_INFO("[USB RX] HSV color set to H: %d, S: %d, V: %d.", nums[0], nums[1], nums[2]);
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> HSV color set to H: %d, S: %d, V: %d.\r\n", nums[0], nums[1], nums[2]);
 
     usb_data->field1 = nums[0];
     usb_data->field2 = nums[1];
@@ -214,22 +164,22 @@ static void handler_get(char* text_buff, char *args)
     color_rgb_t clr;
     get_rgb(&clr);
     NRF_LOG_INFO("[USB RX] Requested RGB, current: R: %ld, G: %ld, B: %ld.", clr.r, clr.g, clr.b);
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> Current RGB color: R: %ld, G: %ld, B: %ld.\r\n", clr.r, clr.g, clr.b);
+    snprintf(text_buff, buff_msg_size, "\r\n>> Current RGB color: R: %ld, G: %ld, B: %ld.\r\n", clr.r, clr.g, clr.b);
 }
 
 static void handler_unknown(char* text_buff, char *args)
 {
     UNUSED_VARIABLE(args);
     NRF_LOG_INFO("[USB RX] Unknown command.");
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Unknown command. Type \"HELP\" to list available commands.\r\n");
+    snprintf(text_buff, buff_msg_size, "\r\n> Unknown command. Type \"HELP\" to list available commands.\r\n");
 }
 
 static void handler_help(char* text_buff, char *args)
 {
     UNUSED_VARIABLE(args);
     NRF_LOG_INFO("[USB RX] Asking for help.");
-    char info[USBC_BUFF_MESSAGE_SIZE];
-    memset(info, 0, USBC_BUFF_MESSAGE_SIZE);
+    char info[buff_msg_size];
+    memset(info, 0, buff_msg_size);
 
     strcat(info, "\r\n== Commands ==\r\n");
     for (int i = 0; i < sizeof(cmdhdls)/sizeof(cmdhdls[0]); i++)
@@ -248,12 +198,12 @@ static void handler_list(char* text_buff, char *args)
     if (!colors_names[0].saved)
     {
         NRF_LOG_INFO("[USB RX] No saved colors.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> No saved colors.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n>> No saved colors.\r\n");
         return;
     }
 
     NRF_LOG_INFO("[USB RX] Saved colors:");
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> Saved colors:\r\n");
+    snprintf(text_buff, buff_msg_size, "\r\n>> Saved colors:\r\n");
 
     for (int i = 0; i < MAX_COLORS; i++)
     {
@@ -276,7 +226,7 @@ static void handler_add_rgb(char* text_buff, char *args)
     if (colors_names[MAX_COLORS - 1].saved)
     {
         NRF_LOG_INFO("[USB RX] Max colors present.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Max colors saved, can't add new.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Max colors saved, can't add new.\r\n");
         return;
     }
 
@@ -285,53 +235,26 @@ static void handler_add_rgb(char* text_buff, char *args)
     if (!get_args(args, arr, count))
     {
         NRF_LOG_INFO("[USB RX] Wrong syntax: %s", args);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong ADDRGB command syntax.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Wrong ADDRGB command syntax.\r\n");
         return;
     }
 
-    if (strlen(arr[3]) > MAX_NAME_LEN)
-    {
-        NRF_LOG_INFO("[USB RX] Name is too long: %s", arr[3]);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> The name is too long, can't exceed %d.\r\n", MAX_NAME_LEN);
+    if (!usbccu_check_name(arr[3], MAX_NAME_LEN, text_buff))
         return;
-    }
 
     int nums[count - 1];
-    for (int i = 0; i < count - 1; i++)
-    {
-        if (sscanf(arr[i], "%d", &nums[i]) == 0)
-        {
-            NRF_LOG_INFO("[USB RX] Wrong data: %s", arr[i]);
-            snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong data passed: %s.\r\n", arr[i]);
-            return;
-        }
-    }
+    if (!usbccu_check_ints(arr, nums, count - 1, text_buff))
+        return;
 
-    if (!helper_is_inbetween(nums[0], 0, 255))
-    {
-        NRF_LOG_INFO("[USB RX] Red invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Red color code is invalid.\r\n");
+    if (!usbccu_check_rgb(nums, text_buff))
         return;
-    }
-    if (!helper_is_inbetween(nums[1], 0, 255))
-    {
-        NRF_LOG_INFO("[USB RX] Green invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Green color code is invalid.\r\n");
-        return;
-    }
-    if (!helper_is_inbetween(nums[2], 0, 255))
-    {
-        NRF_LOG_INFO("[USB RX] Blue invalid.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Blue color code is invalid.\r\n");
-        return;
-    }
 
     for (int i = 0; i < MAX_COLORS; i++)
     {
         if (strcmp(colors_names[i].name, arr[3]) == 0)
         {
             NRF_LOG_INFO("[USB RX] Name is already present.");
-            snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> That name is already present.\r\n");
+            snprintf(text_buff, buff_msg_size, "\r\n> That name is already present.\r\n");
             return;
         }
 
@@ -346,7 +269,7 @@ static void handler_add_rgb(char* text_buff, char *args)
         colors_names[i].color.rgb = rgb;
         colors_names[i].saved = true;
         NRF_LOG_INFO("[USB RX] Savind current color.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> Successfully saved new color. Colors saved: %d.\r\n", (i + 1));
+        snprintf(text_buff, buff_msg_size, "\r\n>> Successfully saved new color. Colors saved: %d.\r\n", (i + 1));
         return;
     }
 }
@@ -359,7 +282,7 @@ static void handler_add_curr(char* text_buff, char *args)
     if (colors_names[MAX_COLORS - 1].saved)
     {
         NRF_LOG_INFO("[USB RX] Max colors present.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Max colors saved, can't save current.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Max colors saved, can't save current.\r\n");
         return;
     }
 
@@ -368,16 +291,12 @@ static void handler_add_curr(char* text_buff, char *args)
     if (!get_args(args, arr, count))
     {
         NRF_LOG_INFO("[USB RX] Wrong syntax: %s", args);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong ADDCURR command syntax.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Wrong ADDCURR command syntax.\r\n");
         return;
     }
 
-    if (strlen(arr[0]) > MAX_NAME_LEN)
-    {
-        NRF_LOG_INFO("[USB RX] Name is too long: %s", arr[0]);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> The name is too long, can't exceed %d.\r\n", MAX_NAME_LEN);
+    if (!usbccu_check_name(arr[0], MAX_NAME_LEN, text_buff))
         return;
-    }
 
 
     for (int i = 0; i < MAX_COLORS; i++)
@@ -385,7 +304,7 @@ static void handler_add_curr(char* text_buff, char *args)
         if (strcmp(colors_names[i].name, arr[0]) == 0)
         {
             NRF_LOG_INFO("[USB RX] Name is already present.");
-            snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> That name is already present.\r\n");
+            snprintf(text_buff, buff_msg_size, "\r\n> That name is already present.\r\n");
             return;
         }
 
@@ -404,7 +323,7 @@ static void handler_add_curr(char* text_buff, char *args)
         colors_names[i].color.rgb = rgb;
         colors_names[i].saved = true;
         NRF_LOG_INFO("[USB RX] Saved current color.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> Successfully saved current color. Colors saved: %d.\r\n", (i + 1));
+        snprintf(text_buff, buff_msg_size, "\r\n>> Successfully saved current color. Colors saved: %d.\r\n", (i + 1));
         return;
     }
 }
@@ -417,16 +336,12 @@ static void handler_del(char* text_buff, char *args)
     if (!get_args(args, arr, count))
     {
         NRF_LOG_INFO("[USB RX] Wrong syntax: %s", args);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong DEL command syntax.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Wrong DEL command syntax.\r\n");
         return;
     }
 
-    if (strlen(arr[0]) > MAX_NAME_LEN)
-    {
-        NRF_LOG_INFO("[USB RX] Name is too long: %s", arr[0]);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> The name is too long, there can't be such name.\r\n");
+    if (!usbccu_check_name(arr[0], MAX_NAME_LEN, text_buff))
         return;
-    }
 
     for (int i = 0; i < MAX_COLORS; i++)
     {
@@ -444,13 +359,13 @@ static void handler_del(char* text_buff, char *args)
         }
 
         NRF_LOG_INFO("[USB RX] Removed color.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> Removed saved color %s.\r\n", arr[0]);
+        snprintf(text_buff, buff_msg_size, "\r\n>> Removed saved color %s.\r\n", arr[0]);
         return;
 
     }
 
     NRF_LOG_INFO("[USB RX] No name found.");
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Specified name not found.\r\n");
+    snprintf(text_buff, buff_msg_size, "\r\n> Specified name not found.\r\n");
 }
 
 static void handler_set(char* text_buff, char *args)
@@ -461,16 +376,12 @@ static void handler_set(char* text_buff, char *args)
     if (!get_args(args, arr, count))
     {
         NRF_LOG_INFO("[USB RX] Wrong syntax: %s", args);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Wrong SET command syntax.\r\n");
+        snprintf(text_buff, buff_msg_size, "\r\n> Wrong SET command syntax.\r\n");
         return;
     }
 
-    if (strlen(arr[0]) > MAX_NAME_LEN)
-    {
-        NRF_LOG_INFO("[USB RX] Name is too long: %s", arr[0]);
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> The name is too long, there can't be such name.\r\n");
+    if (!usbccu_check_name(arr[0], MAX_NAME_LEN, text_buff))
         return;
-    }
 
     for (int i = 0; i < MAX_COLORS; i++)
     {
@@ -486,13 +397,13 @@ static void handler_set(char* text_buff, char *args)
         usb_data->usb_color_command = USB_COM_RGB;
 
         NRF_LOG_INFO("[USB RX] Set color.");
-        snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n>> Set current color: %s.\r\n", arr[0]);
+        snprintf(text_buff, buff_msg_size, "\r\n>> Set current color: %s.\r\n", arr[0]);
         return;
 
     }
 
     NRF_LOG_INFO("[USB RX] No such name.");
-    snprintf(text_buff, USBC_BUFF_MESSAGE_SIZE, "\r\n> Specified name not found.\r\n");
+    snprintf(text_buff, buff_msg_size, "\r\n> Specified name not found.\r\n");
 }
 
 // Parses prefix from command.
@@ -535,8 +446,10 @@ void usbc_process_command(char *buff, char *command_buff)
 
 }
 
-void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*))
+void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*), int size)
 {
+    buff_msg_size = size;
+    usbccu_init(buff_msg_size);
     get_rgb = action;
     usb_data = usbd;
 }

@@ -51,10 +51,21 @@ typedef struct
     usb_command_t usb_color_command;
 } usb_data_t;
 
-// Inits USB commands module.
-void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*));
+/**
+ * @brief Inits USB commands module.
+ *
+ * @param usbd             USB data pointer
+ * @param action           Delegate for getting color from color module
+ * @param size             Max buff message size
+ * */
+void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*), int size);
 
-// Processes USB command and writes message to buff.
+/**
+ * @brief Processes USB command and writes message to buff.
+ *
+ * @param buff             Buffer for messages
+ * @param command_buff     Buffer with command contents
+ * */
 void usbc_process_command(char *buff, char *command_buff);
 
 #endif
