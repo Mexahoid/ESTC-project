@@ -9,7 +9,7 @@ static char command_buff[BUF_SUZE];
 // Command_buff index pointer.
 static int num = 0;
 // Command parser.
-static void (*parse_command)(char*, char*);
+static void (*parse_command)(char*, char*, int);
 
 
 static void ev_handler(app_usbd_class_inst_t const *p_inst,
@@ -35,7 +35,7 @@ static ret_code_t process_command()
 {
     char res[USB_BUFF_MESSAGE_SIZE];
     memset(res, 0, USB_BUFF_MESSAGE_SIZE);
-    parse_command(res, command_buff);
+    parse_command(res, command_buff, USB_BUFF_MESSAGE_SIZE);
     memset(command_buff, 0, BUF_SUZE);
     num = 0;
     return print_usb_message(res);
@@ -92,7 +92,7 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
 }
 
 
-void usb_init(void (*action)(char*, char*))
+void usb_init(void (*action)(char*, char*, int))
 {
     logs_init();
     parse_command = action;

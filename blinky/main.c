@@ -86,7 +86,7 @@ int main(void)
     usb_data_t usb_data;
     usb_data_t usb_data_old;
     usb_init(&usbc_process_command);
-    usbc_init(&usb_data, &color_get_current_rgb, USB_BUFF_MESSAGE_SIZE);
+    usbc_init(&usb_data, &color_get_current_rgb);
 #endif
 
 #ifdef MAIN_LOG

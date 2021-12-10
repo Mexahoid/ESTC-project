@@ -56,16 +56,16 @@ typedef struct
  *
  * @param usbd             USB data pointer
  * @param action           Delegate for getting color from color module
- * @param size             Max buff message size
  * */
-void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*), int size);
+void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*));
 
 /**
  * @brief Processes USB command and writes message to buff.
  *
  * @param buff             Buffer for messages
  * @param command_buff     Buffer with command contents
+ * @param buff_msg_size    Buffer length
  * */
-void usbc_process_command(char *buff, char *command_buff);
+void usbc_process_command(char *buff, char *command_buff, int buff_msg_size);
 
 #endif

@@ -23,7 +23,7 @@
  *
  * @param action                Delegate for action on USB command
  */
-void usb_init(void (*action)(char*, char*));
+void usb_init(void (*action)(char*, char*, int));
 
 /**
  * @brief Processes USB, need to be executed all the time.
