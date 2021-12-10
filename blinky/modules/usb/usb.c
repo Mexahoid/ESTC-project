@@ -31,11 +31,13 @@ static ret_code_t print_usb_message(const char *msg)
 }
 
 // Processes color command to print certain values.
-static ret_code_t process_color_command()
+static ret_code_t process_command()
 {
     char res[USB_BUFF_MESSAGE_SIZE];
-    memset(res, 0, ARRAY_SIZE(res));
+    memset(res, 0, USB_BUFF_MESSAGE_SIZE);
     parse_command(res, command_buff);
+    memset(command_buff, 0, BUF_SUZE);
+    num = 0;
     return print_usb_message(res);
 }
 
@@ -60,24 +62,17 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
             size_t size = app_usbd_cdc_acm_rx_size(&usb_cdc_acm);
             if (m_rx_buffer[0] == '\r' || m_rx_buffer[0] == '\n')
             {
-                if (num < BUF_SUZE)
-                {
-                    command_buff[num] = '\0';
-                }
-                ret = process_color_command();
-                num = 0;
+                ret = process_command();
             }
             else
             {
                 if (isprint((uint8_t)(m_rx_buffer[0])) != 0)
                 {
                     NRF_LOG_INFO("[USB RX] Val: %c, size: %d.", m_rx_buffer[0], size);
-                    if (num < BUF_SUZE)
+                    if (num < BUF_SUZE - 1)
                     {
                         ret = print_usb_message(m_rx_buffer);
                         command_buff[num++] = m_rx_buffer[0];
-                        if (num == BUF_SUZE - 1)
-                            command_buff[num++] = '\0';
                     }
                 }
                 else
