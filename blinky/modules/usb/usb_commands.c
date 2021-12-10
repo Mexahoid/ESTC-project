@@ -553,10 +553,6 @@ static void handler_set(char* const text_buff, char *args, int buff_msg_size)
 
 
         fill_usb_data(&(colors_names[i].color), colors_names[i].color_type);
-        /*usb_data->field1 = colors_names[i].color.rgb.r;
-        usb_data->field2 = colors_names[i].color.rgb.g;
-        usb_data->field3 = colors_names[i].color.rgb.b;
-        usb_data->usb_color = USB_COLOR_RGB;*/
 
         NRF_LOG_INFO("[USB RX] Set color.");
         snprintf(text_buff, buff_msg_size, "\r\n>> Set current color: %s.\r\n", arr[0]);
