@@ -1,4 +1,5 @@
 #include "usb.h"
+#include <ctype.h>
 
 #define READ_SIZE 1
 static char m_rx_buffer[READ_SIZE];
@@ -68,7 +69,7 @@ static void ev_handler(app_usbd_class_inst_t const *p_inst,
             }
             else
             {
-                if (m_rx_buffer[0] > 31 && m_rx_buffer[0] < 127)
+                if (isprint((uint8_t)(m_rx_buffer[0])) != 0)
                 {
                     NRF_LOG_INFO("[USB RX] Val: %c, size: %d.", m_rx_buffer[0], size);
                     if (num < BUF_SUZE)
