@@ -44,3 +44,27 @@ usbccu_error_t usbccu_check_name(const char* const name, int max)
         return USBCCU_NAME_TOO_LONG;
     return USBCCU_OK;
 }
+
+usbccu_error_t usbccu_get_args(char *word, const char ** const arr, int count)
+{
+    int i = 0;
+    char *pot_nums = strtok(word, " ");
+    // To remove first word
+    pot_nums = strtok(NULL, " ");
+
+    while (pot_nums != NULL)
+    {
+        if (i >= count)
+            return USBCCU_INVALID_ARGS;
+        arr[i++] = pot_nums;
+        pot_nums = strtok(NULL, " ");
+    }
+    return i == count ? USBCCU_OK : USBCCU_INVALID_ARGS;
+}
+
+usbccu_error_t usbccu_are_names_equal(const char * const name1, const char * const name2)
+{
+    if (strcmp(name1, name2) == 0)
+        return USBCCU_NAME_EXISTS;
+    return USBCCU_OK;
+}

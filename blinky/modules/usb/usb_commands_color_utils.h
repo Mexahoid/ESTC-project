@@ -20,7 +20,10 @@ typedef enum
 
     USBCCU_INVALID_INTEGER,
 
-    USBCCU_NAME_TOO_LONG
+    USBCCU_INVALID_ARGS,
+
+    USBCCU_NAME_TOO_LONG,
+    USBCCU_NAME_EXISTS
 } usbccu_error_t;
 
 
@@ -59,5 +62,24 @@ usbccu_error_t usbccu_check_ints(const char** const arr, int* const nums, int co
  * @return usbccu_error_t
 */
 usbccu_error_t usbccu_check_name(const char* const name, int max);
+
+/**
+ * @brief Strtoks string to an array of strings.
+ *
+ * @param word              Input word
+ * @param arr               Output subwords
+ * @param count             Max subwords count that is legal for that command
+ * @return usbccu_error_t
+ */
+usbccu_error_t usbccu_get_args(char * const word, const char ** const arr, int count);
+
+/**
+ * @brief Checks whether two names are equal.
+ *
+ * @param name1             First name
+ * @param name2             Second name
+ * @return usbccu_error_t
+ */
+usbccu_error_t usbccu_are_names_equal(const char * const name1, const char * const name2);
 
 #endif
