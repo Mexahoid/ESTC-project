@@ -12,31 +12,14 @@
 #include "color.h"
 
 
-// USB module command types.
+// USB module color types.
 typedef enum
 {
     // If there was RGB command.
-    USB_COM_RGB,
+    USB_COLOR_RGB,
     // If there was HSV command.
-    USB_COM_HSV,
-    // If there was CURR command.
-    USB_COM_GET_RGB,
-    // Wrong command.
-    USB_COM_UNKNOWN,
-    // If there was HELP command.
-    USB_COM_HELP,
-    // If there was ADDRGB command.
-    USB_COM_ADD_RGB,
-    // If there was ADDCURR command.
-    USB_COM_ADD_CURR,
-    // If there was DEL command.
-    USB_COM_DEL,
-    // If there was SET command.
-    USB_COM_SET,
-    // If there was LIST command.
-    USB_COM_LIST
-
-} usb_command_t;
+    USB_COLOR_HSV,
+} usb_color_t;
 
 // Structure holding USB input data.
 typedef struct
@@ -48,7 +31,7 @@ typedef struct
     // Third value;
     int32_t field3;
     // USB color mode.
-    usb_command_t usb_color_command;
+    usb_color_t usb_color;
 } usb_data_t;
 
 /**
@@ -57,7 +40,7 @@ typedef struct
  * @param usbd             USB data pointer
  * @param action           Delegate for getting color from color module
  * */
-void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*));
+void usbc_init(usb_data_t * const usbd, void (*action)(color_rgb_t*));
 
 /**
  * @brief Processes USB command and writes message to buff.
@@ -66,6 +49,6 @@ void usbc_init(usb_data_t *usbd, void (*action)(color_rgb_t*));
  * @param command_buff     Buffer with command contents
  * @param buff_msg_size    Buffer length
  * */
-void usbc_process_command(char *buff, char *command_buff, int buff_msg_size);
+void usbc_process_command(char * const buff, char * const command_buff, int buff_msg_size);
 
 #endif

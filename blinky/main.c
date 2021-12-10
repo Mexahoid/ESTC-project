@@ -171,7 +171,7 @@ int main(void)
 #endif
 
 #ifdef USB
-    usb_data.usb_color_command = USB_COM_RGB;
+    usb_data.usb_color = USB_COLOR_RGB;
     usb_data.field1 = color.r;
     usb_data.field2 = color.g;
     usb_data.field3 = color.b;
@@ -198,16 +198,16 @@ int main(void)
             memcpy(&usb_data_old, &usb_data, sizeof(usb_data_t));
             color_hsv_t hsv;
 
-            switch (usb_data.usb_color_command)
+            switch (usb_data.usb_color)
             {
-            case USB_COM_RGB:
+            case USB_COLOR_RGB:
                 saved_rgb.r = usb_data.field1;
                 saved_rgb.g = usb_data.field2;
                 saved_rgb.b = usb_data.field3;
                 color_set_rgb(&saved_rgb);
                 break;
 
-            case USB_COM_HSV:
+            case USB_COLOR_HSV:
 
                 hsv.h = usb_data.field1;
                 hsv.s = usb_data.field2;
