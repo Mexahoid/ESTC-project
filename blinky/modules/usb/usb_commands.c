@@ -4,7 +4,7 @@
 // Delegate that gets current RGB from RGB module.
 static void (*get_rgb)(color_rgb_t*);
 // Special struct that holds USB data.
-usb_data_t* usb_data;
+static usb_data_t* usb_data;
 
 // Max symbols in name (not counting \0).
 #define MAX_NAME_LEN 8
@@ -58,7 +58,7 @@ typedef struct
  * @param values                Color union with data
  * @param color                 Color type
  */
-void fill_usb_data(const cmd_args_inner_color_union_t * const values, usb_color_t color)
+static void fill_usb_data(const cmd_args_inner_color_union_t * const values, usb_color_t color)
 {
     usb_data->usb_color = color;
     switch (color)
@@ -125,7 +125,7 @@ static cmd_args_add_color_t colors_names[MAX_COLORS];
  * @param data                      Data for saving
  * @param color                     Color type
  */
-void save_color_data(cmd_args_add_color_t * const colors_name, const cmd_args_inner_color_union_t * const data, usb_color_t color)
+static void save_color_data(cmd_args_add_color_t * const colors_name, const cmd_args_inner_color_union_t * const data, usb_color_t color)
 {
     colors_name->color_type = color;
     colors_name->saved = true;
