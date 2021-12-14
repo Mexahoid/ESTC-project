@@ -45,7 +45,7 @@ usbccu_error_t usbccu_check_name(const char* const name, int max)
     return USBCCU_OK;
 }
 
-usbccu_error_t usbccu_get_args(char *word, const char ** const arr, int count)
+usbccu_error_t usbccu_get_args(char * const word, const char ** const arr, int count)
 {
     int i = 0;
     char *pot_nums = strtok(word, " ");

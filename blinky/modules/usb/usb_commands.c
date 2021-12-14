@@ -47,7 +47,7 @@ typedef struct
 typedef struct
 {
     const char* command;
-    void (*handler)(char*, char*, int);
+    void (*handler)(char*, const char*, int);
     const char* args;
     const char* info;
 } cmd_handler_t;
@@ -78,27 +78,27 @@ static void fill_usb_data(const cmd_args_inner_color_union_t * const values, usb
 
 
 // Handles CURR command.
-static void handler_get(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_get(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles RGB command.
-static void handler_rgb(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_rgb(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles HSV command.
-static void handler_hsv(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_hsv(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles HELP command.
-static void handler_help(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_help(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles LIST command.
-static void handler_list(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_list(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles ADDRGB command.
-static void handler_add_rgb(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_add_rgb(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles ADDHSV command.
-static void handler_add_hsv(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_add_hsv(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles ADDCURR command.
-static void handler_add_curr(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_add_curr(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles DEL command.
-static void handler_del(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_del(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles SET command.
-static void handler_set(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_set(char* const text_buff, const char * const args, int buff_msg_size);
 // Handles wrong commands.
-static void handler_unknown(char* const text_buff, char * const args, int buff_msg_size);
+static void handler_unknown(char* const text_buff, const char * const args, int buff_msg_size);
 
 // Commands with their handlers and info.
 static cmd_handler_t cmdhdls[] =
@@ -212,17 +212,27 @@ static bool parse_usbccu_code(char* const text_buff, int buff_msg_size, usbccu_e
 }
 
 
-static void handler_rgb(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_rgb(char* const text_buff, const char * const args, int buff_msg_size)
 {
     NRF_LOG_INFO("[USB RX] Set RGB");
     int count = 3;
     const char *arr[count];
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(args), args);
+
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     int nums[count];
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_ints(arr, nums, count)))
+    {
+        for (int i = 0; i < count; i++)
+            NRF_LOG_INFO("[USB RX] Length: %d.", strlen(arr[i]));
         return;
+    }
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_rgb(nums)))
         return;
@@ -237,13 +247,17 @@ static void handler_rgb(char* const text_buff, char * const args, int buff_msg_s
     fill_usb_data(&clr, USB_COLOR_RGB);
 }
 
-static void handler_hsv(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_hsv(char* const text_buff, const char * const args, int buff_msg_size)
 {
     NRF_LOG_INFO("[USB RX] Set HSV");
     int count = 3;
     const char *arr[count];
 
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     int nums[count];
@@ -266,7 +280,7 @@ static void handler_hsv(char* const text_buff, char * const args, int buff_msg_s
     fill_usb_data(&clr, USB_COLOR_HSV);
 }
 
-static void handler_get(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_get(char* const text_buff, const char * const args, int buff_msg_size)
 {
     UNUSED_VARIABLE(args);
     color_rgb_t clr;
@@ -275,14 +289,14 @@ static void handler_get(char* const text_buff, char * const args, int buff_msg_s
     snprintf(text_buff, buff_msg_size, "\r\n>> Current RGB color: R: %ld, G: %ld, B: %ld.\r\n", clr.r, clr.g, clr.b);
 }
 
-static void handler_unknown(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_unknown(char* const text_buff, const char * const args, int buff_msg_size)
 {
     UNUSED_VARIABLE(args);
     NRF_LOG_INFO("[USB RX] Unknown command.");
     snprintf(text_buff, buff_msg_size, "\r\n> Unknown command. Type \"HELP\" to list available commands.\r\n");
 }
 
-static void handler_help(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_help(char* const text_buff, const char * const args, int buff_msg_size)
 {
     UNUSED_VARIABLE(args);
     NRF_LOG_INFO("[USB RX] Asking for help.");
@@ -309,7 +323,7 @@ static void handler_help(char* const text_buff, char * const args, int buff_msg_
     strcpy(text_buff, info);
 }
 
-static void handler_list(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_list(char* const text_buff, const char * const args, int buff_msg_size)
 {
     UNUSED_VARIABLE(args);
     NRF_LOG_INFO("[USB RX] List requested.");
@@ -351,7 +365,7 @@ static void handler_list(char* const text_buff, char * const args, int buff_msg_
     }
 }
 
-static void handler_add_rgb(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_add_rgb(char* const text_buff, const char * const args, int buff_msg_size)
 {
     NRF_LOG_INFO("[USB RX] Adding RGB record.");
     if (colors_names[MAX_COLORS - 1].saved)
@@ -364,7 +378,11 @@ static void handler_add_rgb(char* const text_buff, char * const args, int buff_m
     int count = 4;
     const char *arr[count];
 
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[3], MAX_NAME_LEN)))
@@ -397,7 +415,7 @@ static void handler_add_rgb(char* const text_buff, char * const args, int buff_m
     }
 }
 
-static void handler_add_hsv(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_add_hsv(char* const text_buff, const char * const args, int buff_msg_size)
 {
     NRF_LOG_INFO("[USB RX] Adding HSV record.");
     if (colors_names[MAX_COLORS - 1].saved)
@@ -410,7 +428,11 @@ static void handler_add_hsv(char* const text_buff, char * const args, int buff_m
     int count = 4;
     const char *arr[count];
 
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[3], MAX_NAME_LEN)))
@@ -444,7 +466,7 @@ static void handler_add_hsv(char* const text_buff, char * const args, int buff_m
     }
 }
 
-static void handler_add_curr(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_add_curr(char* const text_buff, const char * const args, int buff_msg_size)
 {
     color_rgb_t clr;
     get_rgb(&clr);
@@ -459,7 +481,11 @@ static void handler_add_curr(char* const text_buff, char * const args, int buff_
     int count = 1;
     const char *arr[count];
 
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[0], MAX_NAME_LEN)))
@@ -492,13 +518,17 @@ static void handler_add_curr(char* const text_buff, char * const args, int buff_
     }
 }
 
-static void handler_del(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_del(char* const text_buff, const char * const args, int buff_msg_size)
 {
     NRF_LOG_INFO("[USB RX] Deleting record.");
     int count = 1;
     const char *arr[count];
 
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[0], MAX_NAME_LEN)))
@@ -530,13 +560,17 @@ static void handler_del(char* const text_buff, char * const args, int buff_msg_s
     snprintf(text_buff, buff_msg_size, "\r\n> Specified name not found.\r\n");
 }
 
-static void handler_set(char* const text_buff, char * const args, int buff_msg_size)
+static void handler_set(char* const text_buff, const char * const args, int buff_msg_size)
 {
     NRF_LOG_INFO("[USB RX] Setting color by name.");
     int count = 1;
     const char *arr[count];
 
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, arr, count)))
+    char tword[strlen(args)];
+    strcpy(tword, args);
+
+    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[0], MAX_NAME_LEN)))
