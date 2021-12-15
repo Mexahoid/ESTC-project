@@ -45,10 +45,13 @@ usbccu_error_t usbccu_check_name(const char* const name, int max)
     return USBCCU_OK;
 }
 
-usbccu_error_t usbccu_get_args(char *word, const char ** const arr, int count)
+usbccu_error_t usbccu_get_args(const char * const word, char * const buff, const char ** const arr, int count)
 {
     int i = 0;
-    char *pot_nums = strtok(word, " ");
+    memset(buff, 0, strlen(word));
+    strcpy(buff, word);
+    char *pot_nums = strtok(buff, " ");
+
     // To remove first word
     pot_nums = strtok(NULL, " ");
 
