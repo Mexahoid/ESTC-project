@@ -67,11 +67,12 @@ usbccu_error_t usbccu_check_name(const char* const name, int max);
  * @brief Strtoks string to an array of strings.
  *
  * @param word              Input word
+ * @param buff              Input buffer
  * @param arr               Output subwords
  * @param count             Max subwords count that is legal for that command
  * @return usbccu_error_t
  */
-usbccu_error_t usbccu_get_args(char * const word, const char ** const arr, int count);
+usbccu_error_t usbccu_get_args(const char * const word, char * const buff, const char ** const arr, int count);
 
 /**
  * @brief Checks whether two names are equal.

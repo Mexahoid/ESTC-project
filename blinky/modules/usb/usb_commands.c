@@ -220,10 +220,7 @@ static void handler_rgb(char* const text_buff, const char * const args, int buff
     NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(args), args);
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     int nums[count];
@@ -254,10 +251,7 @@ static void handler_hsv(char* const text_buff, const char * const args, int buff
     const char *arr[count];
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     int nums[count];
@@ -379,10 +373,7 @@ static void handler_add_rgb(char* const text_buff, const char * const args, int 
     const char *arr[count];
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[3], MAX_NAME_LEN)))
@@ -429,10 +420,7 @@ static void handler_add_hsv(char* const text_buff, const char * const args, int 
     const char *arr[count];
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[3], MAX_NAME_LEN)))
@@ -482,10 +470,7 @@ static void handler_add_curr(char* const text_buff, const char * const args, int
     const char *arr[count];
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[0], MAX_NAME_LEN)))
@@ -525,10 +510,7 @@ static void handler_del(char* const text_buff, const char * const args, int buff
     const char *arr[count];
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[0], MAX_NAME_LEN)))
@@ -567,10 +549,7 @@ static void handler_set(char* const text_buff, const char * const args, int buff
     const char *arr[count];
 
     char tword[strlen(args)];
-    strcpy(tword, args);
-
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(tword), tword);
-    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(tword, arr, count)))
+    if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
         return;
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_name(arr[0], MAX_NAME_LEN)))
