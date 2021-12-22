@@ -140,12 +140,6 @@ int main(void)
 #ifndef USB
     logs_init();
 #endif
-
-    int a = 0, b = 0, c = 0;
-    int j = 0, k = 0, l = 0;
-    int z = 0, x = 0, y = 0;
-    int a1 = 0, a2 = 0, a3 = 0;
-
 #endif
 
     if (!flash_init())
@@ -155,40 +149,14 @@ int main(void)
     else
     {
         flash_load_word(&data);
-
-        saved_rgb.r = (int32_t)data.first_byte;
-        saved_rgb.g = (int32_t)data.second_byte;
-        saved_rgb.b = (int32_t)data.third_byte;
-#ifdef MAIN_LOG
-        a = saved_rgb.r;
-        b = saved_rgb.g;
-        c = saved_rgb.b;
-#endif
         // Just in case
-        saved_rgb.r = helper_clamp(saved_rgb.r, 0, 255);
-        saved_rgb.g = helper_clamp(saved_rgb.g, 0, 255);
-        saved_rgb.b = helper_clamp(saved_rgb.b, 0, 255);
+        saved_rgb.r = helper_clamp((int32_t)data.first_byte, 0, 255);
+        saved_rgb.g = helper_clamp((int32_t)data.second_byte, 0, 255);
+        saved_rgb.b = helper_clamp((int32_t)data.third_byte, 0, 255);
 
         color_hsv_t hsv;
         color_convert_rgb_hsv(&saved_rgb, &hsv);
-
         color_init(&hsv);
-#ifdef MAIN_LOG
-        j = hsv.h;
-        k = hsv.s;
-        l = hsv.v;
-        color_rgb_t test_rgb;
-        color_get_current_rgb(&test_rgb);
-        z = test_rgb.r;
-        x = test_rgb.g;
-        y = test_rgb.b;
-        color_pwm_t test_rg2b;
-        color_get_current_pwm_percentages(&test_rg2b);
-        a1 = test_rg2b.r;
-        a2 = test_rg2b.g;
-        a3 = test_rg2b.b;
-
-#endif
     }
 
     color_pwm_t color;
