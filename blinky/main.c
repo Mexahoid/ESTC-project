@@ -59,8 +59,8 @@
 #include "nrf_delay.h"
 #endif
 
-#define USB
-#ifdef USB
+//#define USB
+#ifdef MAIN_USB
 #include "usb.h"
 #include "usb_commands.h"
 #endif
@@ -129,7 +129,7 @@ int main(void)
     color_rgb_t saved_rgb;
     flash_word_t data;
 
-#ifdef USB
+#ifdef MAIN_USB
     usb_data_t usb_data;
     usb_data_t usb_data_old;
     usb_init(&usbc_process_command);
@@ -137,7 +137,7 @@ int main(void)
 #endif
 
 #ifdef MAIN_LOG
-#ifndef USB
+#ifndef MAIN_USB
     logs_init();
 #endif
 #endif
@@ -185,7 +185,7 @@ int main(void)
     color_old.b = color.b;
 #endif
 
-#ifdef USB
+#ifdef MAIN_USB
     usb_data.usb_color = USB_COLOR_RGB;
     usb_data.field1 = color.r;
     usb_data.field2 = color.g;
@@ -196,7 +196,7 @@ int main(void)
     while (true)
     {
 
-#ifdef USB
+#ifdef MAIN_USB
         usb_process();
         if (memcmp(&usb_data_old, &usb_data, sizeof(usb_data_t)) != 0)
         {

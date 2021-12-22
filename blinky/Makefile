@@ -1,9 +1,11 @@
-PROJECT_NAME     := blinky_pca10059_mbr
-TARGETS          := nrf52840_xxaa
-BUILD_NAME       ?= _build
-BUILDS_FOLDER    ?= builds
-OUTPUT_DIRECTORY := $(BUILDS_FOLDER)/$(BUILD_NAME)
-DFU_PORT         ?= /dev/ttyACM0
+PROJECT_NAME                := blinky_pca10059_mbr
+TARGETS                     := nrf52840_xxaa
+BUILD_NAME                  ?= _build
+BUILDS_FOLDER               ?= builds
+OUTPUT_DIRECTORY            := $(BUILDS_FOLDER)/$(BUILD_NAME)
+DFU_PORT                    ?= /dev/ttyACM0
+ESTC_USB_CLI_ENABLED        ?= 1
+ESTC_LOG_ENABLED            ?= 0
 
 SDK_ROOT ?= ../ESTC-NSDK
 PROJ_DIR := ./
@@ -175,6 +177,21 @@ CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
+
+
+ifeq ($(ESTC_USB_CLI_ENABLED), 1)
+$(warning Building with USB enabled)
+CFLAGS += -DMAIN_USB
+else
+$(warning Building with USB disabled)
+endif
+
+ifeq ($(ESTC_LOG_ENABLED), 1)
+$(warning Building with logging enabled)
+CFLAGS += -DMAIN_LOG
+else
+$(warning Building with logging disabled)
+endif
 
 # C++ flags common to all targets
 CXXFLAGS += $(OPT)
