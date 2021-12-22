@@ -264,10 +264,17 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 dfu: $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu.zip
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex
-	nrfutil dfu usb-serial -pkg $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu.zip -p $(DFU_PORT) -b 115200
+	nrfutil dfu usb-serial \
+      -pkg $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu.zip \
+      -p $(DFU_PORT) \
+      -b 115200 \
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.dfu.zip: default
-	nrfutil pkg generate --hw-version 52 --sd-req 0x00 --application-version 1 --application $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex $@
+	nrfutil pkg generate \
+      --hw-version 52 \
+      --sd-req 0x00 \
+      --application-version 1 \
+      --application $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex $@
 
 erase:
 	nrfjprog -f nrf52 --eraseall
