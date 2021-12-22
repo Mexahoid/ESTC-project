@@ -217,7 +217,6 @@ static void handler_rgb(char* const text_buff, const char * const args, int buff
     NRF_LOG_INFO("[USB RX] Set RGB");
     int count = 3;
     const char *arr[count];
-    NRF_LOG_INFO("[USB RX] Length: %d, : %s.", strlen(args), args);
 
     char tword[strlen(args)];
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_get_args(args, tword, arr, count)))
@@ -225,11 +224,8 @@ static void handler_rgb(char* const text_buff, const char * const args, int buff
 
     int nums[count];
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_ints(arr, nums, count)))
-    {
-        for (int i = 0; i < count; i++)
-            NRF_LOG_INFO("[USB RX] Length: %d.", strlen(arr[i]));
         return;
-    }
+
 
     if (!parse_usbccu_code(text_buff, buff_msg_size, usbccu_check_rgb(nums)))
         return;
