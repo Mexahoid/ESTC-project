@@ -26,7 +26,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE
-*/
+ */
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -74,6 +74,53 @@
 void gpio_action(int gpio, int state)
 {
     led_change_state_to(gpio, state);
+}
+
+/**
+ * @brief Switches led pwm mode on color mode value.
+ *
+ * @param cm                    Color mode.
+ * @param ctx                   LED PWM context.
+ * @return true
+ * @return false
+ */
+bool switch_colormode(const color_mode_t *const cm, pwm_ctx_t *const ctx)
+{
+    static char sflag = 0b0000;
+    switch (*cm)
+    {
+    case COLOR_MODE_OFF:
+        if ((sflag & 0b0001) == 0)
+        {
+            ctx->delay_total = 0;
+            pwm_set_percentage(ctx, 0);
+            sflag &= 0b0001;
+        }
+        return true;
+    case COLOR_MODE_HUE:
+        if ((sflag & 0b0010) == 0)
+        {
+            ctx->delay_total = BLINK_DELAY_MS;
+            sflag &= 0b0010;
+        }
+        return false;
+    case COLOR_MODE_SAT:
+        if ((sflag & 0b0100) == 0)
+        {
+            ctx->delay_total = BLINK_DELAY_MS / 2;
+            sflag &= 0b0100;
+        }
+        return false;
+    case COLOR_MODE_BRI:
+        if ((sflag & 0b1000) == 0)
+        {
+            ctx->delay_total = 0;
+            pwm_set_percentage(ctx, 100);
+            sflag &= 0b1000;
+        }
+        return false;
+    }
+    return false;
 }
 
 int main(void)
@@ -178,8 +225,6 @@ int main(void)
     memcpy(&usb_data_old, &usb_data, sizeof(usb_data_t));
 #endif
 
-    char sflag = 0;
-
     while (true)
     {
 
@@ -187,14 +232,6 @@ int main(void)
         usb_process();
         if (memcmp(&usb_data_old, &usb_data, sizeof(usb_data_t)) != 0)
         {
-#ifdef MAIN_LOG
-        NRF_LOG_INFO("INITED: R: %d, G: %d, B: %d.", a, b, c);
-        NRF_LOG_PROCESS();
-        NRF_LOG_INFO("HSV: %d %d %d. GOT FROM COLOR: %d %d %d", j, k, l, z, x, y);
-        NRF_LOG_PROCESS();
-        NRF_LOG_INFO("PWMS: R: %d, G: %d, B: %d.", a1, a2, a3);
-        NRF_LOG_PROCESS();
-#endif
             memcpy(&usb_data_old, &usb_data, sizeof(usb_data_t));
             color_hsv_t hsv;
 
@@ -215,7 +252,7 @@ int main(void)
                 color_set_hsv(&hsv);
                 break;
             default:
-            break;
+                break;
             }
             color_get_current_rgb(&saved_rgb);
             data.first_byte = (uint8_t)(saved_rgb.r);
@@ -226,7 +263,6 @@ int main(void)
             color_get_current_pwm_percentages(&color);
         }
 #endif
-
 
 #ifdef MAIN_LOG
         logs_process();
@@ -240,54 +276,21 @@ int main(void)
         pwm_modulate(&pwm_context_led2_green);
         pwm_modulate(&pwm_context_led2_blue);
         color_mode_t cm = color_get_mode();
-        switch (cm)
+
+        if (switch_colormode(&cm, &pwm_context_led1_green) && !is_saved)
         {
-        case COLOR_MODE_OFF:
-            if ((sflag & 0b0001) == 0)
-            {
-                pwm_context_led1_green.delay_total = 0;
-                pwm_set_percentage(&pwm_context_led1_green, 0);
-                sflag &= 0b0001;
-            }
-
-            if (!is_saved)
-            {
-                color_get_current_rgb(&saved_rgb);
-                data.first_byte = (uint8_t)(saved_rgb.r);
-                data.second_byte = (uint8_t)(saved_rgb.g);
-                data.third_byte = (uint8_t)(saved_rgb.b);
-                is_saved = true;
+            color_get_current_rgb(&saved_rgb);
+            data.first_byte = (uint8_t)(saved_rgb.r);
+            data.second_byte = (uint8_t)(saved_rgb.g);
+            data.third_byte = (uint8_t)(saved_rgb.b);
+            is_saved = true;
 #ifdef MAIN_LOG
-                NRF_LOG_INFO("Saving: R: %d, G: %d, B: %d, is_saved: %d", data.first_byte, data.second_byte, data.third_byte, is_saved);
-                NRF_LOG_PROCESS();
+            NRF_LOG_INFO("Saving: R: %d, G: %d, B: %d, is_saved: %d", data.first_byte, data.second_byte, data.third_byte, is_saved);
+            NRF_LOG_PROCESS();
 #endif
-                flash_save_word(&data);
-            }
-
-            break;
-        case COLOR_MODE_HUE:
-            if ((sflag & 0b0010) == 0)
-            {
-                pwm_context_led1_green.delay_total = BLINK_DELAY_MS;
-                sflag &= 0b0010;
-            }
-            break;
-        case COLOR_MODE_SAT:
-            if ((sflag & 0b0100) == 0)
-            {
-                pwm_context_led1_green.delay_total = BLINK_DELAY_MS / 2;
-                sflag &= 0b0100;
-            }
-            break;
-        case COLOR_MODE_BRI:
-            if ((sflag & 0b1000) == 0)
-            {
-                pwm_context_led1_green.delay_total = 0;
-                pwm_set_percentage(&pwm_context_led1_green, 100);
-                sflag &= 0b1000;
-            }
-            break;
+            flash_save_word(&data);
         }
+
         pwm_percentage_recalc(&pwm_context_led1_green);
 
         button_state_t button_state = button_check_for_clicktype();
