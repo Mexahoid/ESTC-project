@@ -11,7 +11,7 @@ SDK_ROOT ?= ../ESTC-NSDK
 PROJ_DIR := ./
 
 $(OUTPUT_DIRECTORY)/nrf52840_xxaa.out: \
-  LINKER_SCRIPT  := usb_logs_gcc_nrf52.ld
+  LINKER_SCRIPT  := my_uberdongle_nrf52.ld
 
 # Source files common to all targets
 SRC_FILES += \
@@ -287,12 +287,13 @@ flash: default
 	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex
 	nrfutil pkg generate $(OUTPUT_DIRECTORY)/app.zip \
 	    --hw-version 52 \
-	    --sd-req 0 \
-	    --application $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex \
-	    --application-version 1 \
-	    --softdevice $(SDK_ROOT)/components/softdevice/s113/hex/s113_nrf52_7.2.0_softdevice.hex \
-	    --sd-id 0x0102 \
+      --sd-req 0x00 \
+      --application-version 1 \
+      --application $(OUTPUT_DIRECTORY)/nrf52840_xxaa.hex \
+      --softdevice $(SDK_ROOT)/components/softdevice/s113/hex/s113_nrf52_7.2.0_softdevice.hex \
+      --sd-id 0x0102 \
 	      >/dev/null
 	nrfutil dfu usb-serial \
 	    --package $(OUTPUT_DIRECTORY)/app.zip \
-	    --port $(DFU_PORT)
+	    --port $(DFU_PORT) \
+      --baud-rate 115200
