@@ -31,10 +31,6 @@ static void in_pin_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
         return;
     nrfx_systick_get(&button_timestamp);
     clicks++;
-#ifdef BUTTON_LOG
-    NRF_LOG_INFO("Clicks: %d", clicks);
-    LOG_BACKEND_USB_PROCESS();
-#endif
 }
 
 void button_interrupt_init()
@@ -67,10 +63,6 @@ button_state_t button_check_for_clicktype()
         if (clicks == 1 && is_button_pressed)
         {
             is_long_pressed = true;
-#ifdef BUTTON_LOG
-            NRF_LOG_INFO("Long press acquired");
-            LOG_BACKEND_USB_PROCESS();
-#endif
             return BUTTON_STATE_LONGPRESS;
         }
 
@@ -78,10 +70,6 @@ button_state_t button_check_for_clicktype()
         {
             clicks = 0;
             is_long_pressed = false;
-#ifdef BUTTON_LOG
-            NRF_LOG_INFO("No second clicks");
-            LOG_BACKEND_USB_PROCESS();
-#endif
             return BUTTON_STATE_NOP;
         }
     }
@@ -99,10 +87,6 @@ button_state_t button_check_for_clicktype()
         {
             clicks = 0;
             is_long_pressed = false;
-#ifdef BUTTON_LOG
-            NRF_LOG_INFO("Double click acquired - changing mode");
-            LOG_BACKEND_USB_PROCESS();
-#endif
             return BUTTON_STATE_DOUBLECLICK;
         }
     }
